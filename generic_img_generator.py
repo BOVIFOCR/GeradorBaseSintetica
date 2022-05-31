@@ -16,7 +16,7 @@ path_entrada = './input/'
 
 # Nome do json de saída do VIA ANNOTATOR com as informações de todas as imagens rotuladas.
 # json_name = 'new.json'
-json_name = './new.json'
+json_path = './labels/'
 
 def main():
     # Escolher o tipo de imagem que será gerada CNH, RG ou CPF, isso definirá a melhor fonte para a imagem criada.
@@ -27,11 +27,12 @@ def main():
     repetir = 1
 
     # with open(path_entrada + r'/' + json_name, 'r', encoding='utf-8') \
-    with open(json_name, 'r', encoding='utf-8') \
-            as json_file:
-        json_arq = json.load(json_file)
 
     for file_img in os.listdir(path_entrada):
+        with open(json_path + file_img.split('/')[-1].replace('.jpg', '.json'), 'r', encoding='utf-8') \
+                as json_file:
+            json_arq = json.load(json_file)
+
         if file_img.endswith('.jpg') or file_img.endswith('.JPG') or file_img.endswith('.jpeg') \
                 or file_img.endswith('.png'):
             img_name = str(file_img)
