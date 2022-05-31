@@ -8,12 +8,12 @@ import os
 
 import text_2_image
 
-path_base = paths.path
-path_entrada = path_base + r'/reboot'
+path_base = '' #paths.path
+path_entrada = path_base + r'./reboot'
 path_saida = path_entrada
 
-json_original = 'via_export_json.json'
-
+# json_original = 'via_export_json.json'
+json_original = './new.json'
 
 def rotate_bound(img_name):
     img = cv.imread(path_entrada + r'/' + img_name)
@@ -170,6 +170,3 @@ def ctr_brg(img_name, area_n_text, tipo_doc):
 def augmentation(new_img_name, area_n_text, tipo_doc):
     gaussian_noise(new_img_name, area_n_text)
     ctr_brg(new_img_name, area_n_text, tipo_doc)
-
-
-

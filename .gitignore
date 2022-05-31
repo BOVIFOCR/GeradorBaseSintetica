@@ -1,3 +1,4 @@
+labels/*
 ./rot/*
 !./rot/crop
 !./rot/dpi
@@ -15,3 +16,4 @@
 ./reboot/*
 ./results/*
 ./tiles/*
+__pycache__/*

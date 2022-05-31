@@ -8,24 +8,26 @@ import rotate_images
 import text_2_image
 
 import paths
-path_base = paths.path
+path_base = '' #paths.path
 
 # Path com a imagem.
-path_entrada = path_base + r'/original/BASE_UTIL/BETA'
+# path_entrada = path_base + r'/original/BASE_UTIL/BETA'
+path_entrada = './input/'
 
 # Nome do json de saída do VIA ANNOTATOR com as informações de todas as imagens rotuladas.
-json_name = 'via_export_json.json'
-
+# json_name = 'new.json'
+json_name = './new.json'
 
 def main():
     # Escolher o tipo de imagem que será gerada CNH, RG ou CPF, isso definirá a melhor fonte para a imagem criada.
-    tipo_doc = 'CNH'
+    tipo_doc = 'RG'
 
     # Número de vezes que o processo irá se repetir para criar mais de uma imagem com informações diferentes a
     # partir de uma mesma imagem.
     repetir = 1
 
-    with open(path_entrada + r'/' + json_name, 'r', encoding='utf-8') \
+    # with open(path_entrada + r'/' + json_name, 'r', encoding='utf-8') \
+    with open(json_name, 'r', encoding='utf-8') \
             as json_file:
         json_arq = json.load(json_file)
 

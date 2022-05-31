@@ -53,7 +53,7 @@ class Person:
         self.aspa = []
 
     def set_nome(self, qtd_chars):
-        file = open(r'./files/nome.txt')
+        file = open(r'./files/nome.txt', 'r', encoding = "ISO-8859-1")
         names = file.readlines()
 
         full_name = ''
@@ -621,4 +621,3 @@ class Person:
         topo = self.n_6.pop(0)
         self.n_6.append(topo)
         return topo
-

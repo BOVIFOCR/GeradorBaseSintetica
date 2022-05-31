@@ -6,15 +6,15 @@ import os
 import re
 
 import paths
-path_base = paths.path
+path_base = ''#paths.path
 
-path_entrada = path_base
-path_saida = path_base + r'/saida_rot'
+path_entrada = './input'#path_base
+path_saida = path_base + r'./rot'
 path_dpi = path_saida + r'/dpi'
 
 # Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
-
+#pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 
 def rotate(bin_img, orig_img):
     newdata = pytesseract.image_to_osd(image=bin_img, config='--psm 0 -l por')
@@ -63,9 +63,9 @@ def rotate_img(img, img_name):
         cv.imwrite(os.path.join(path_saida, img_name), new_img)
         check_img = 1
 
-    except:
+    except Exception:
         print('********************************')
-        print('Erro na imagem: ' + img_name)
+        print('Erro na imagem: ' + img_name + Exception)
         print('********************************')
 
     os.remove(path_dpi + r'/' + img_name)

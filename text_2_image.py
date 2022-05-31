@@ -12,13 +12,13 @@ import background_generator
 import class_pessoa
 import paths
 
-path_base = paths.path
+path_base = '' # paths.path
 
-path_input = path_base + r'/saida_back'
-path_mask = path_base + r'/mask'
+path_input = path_base + r'./back'
+path_mask = path_base + r'./mask'
 path_crops = path_mask + r'/crops'
 path_crops_teste = path_crops + r'/teste'
-path_output = path_base + r'/reboot'
+path_output = './reboot' #path_base + r'/reboot'
 
 # CNH
 # font_color = (15, 15, 15)
@@ -51,7 +51,7 @@ def rotate_crop_img(img_crop, direction):
 def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
     qtd_chars = control_text
     text = ''
-    if tipo_texto == 'nome':
+    if tipo_texto == 'name': # nome
         text = pessoa.set_nome(qtd_chars)
     elif tipo_texto == 's_nome':
         text = pessoa.set_s_nome()
@@ -59,15 +59,15 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_cpf()
     elif tipo_texto == 'rg':
         text = pessoa.set_rg(tipo_doc)
-    elif tipo_texto == 'org':
+    elif tipo_texto == 'org': # org
         text = pessoa.set_org()
     elif tipo_texto == 'est':
         text = pessoa.set_est()
-    elif tipo_texto == 'cid_est':
+    elif tipo_texto == 'city': # cid_est
         text = pessoa.set_cid_est(qtd_chars)
     elif tipo_texto == 'rg_org_est':
         text = pessoa.set_rg_org_est()
-    elif tipo_texto == 'data':
+    elif tipo_texto == 'date': # data
         text = pessoa.set_data()
     elif tipo_texto == 'tipo_h':
         text = pessoa.set_tipo_h()
@@ -229,12 +229,13 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
     mask.save(os.path.join(path_mask, mask_name))
     mask.close()
 
-    conj_img = [v for k, v in json_arq.items() if k.startswith(img_name)]
+    #conj_img = [v for k, v in json_arq.items() if k.startswith(img_name)]
+    regions = json_arq
 
     # Checa se a imagem está no path
-    if conj_img is not None:
-        search = conj_img[0]
-        regions = search['regions']
+    if regions is not None:
+        #search = conj_img[0]
+        #regions = search['regions']
         qtd_regions = len(regions)
         aux = 0
 
@@ -247,11 +248,11 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
                 tipo_texto = regions[aux]['region_attributes']['text_type']
 
                 # Região é um retângulo.
-                if regions[aux]['shape_attributes']['name'] == 'rect':
-                    x_inicial = regions[aux]['shape_attributes']['x']
-                    width = regions[aux]['shape_attributes']['width']
-                    y_inicial = regions[aux]['shape_attributes']['y']
-                    height = regions[aux]['shape_attributes']['height']
+                if regions[aux]['region_shape_attributes']['name'] == 'rect':
+                    x_inicial = regions[aux]['region_shape_attributes']['x']
+                    width = regions[aux]['region_shape_attributes']['width']
+                    y_inicial = regions[aux]['region_shape_attributes']['y']
+                    height = regions[aux]['region_shape_attributes']['height']
 
                     x_final = x_inicial + width
                     y_final = y_inicial + height
@@ -268,8 +269,8 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
                     min_x, max_x, min_y, max_y = x_inicial, x_final, y_inicial, y_final
 
                 else:  # Não é um retângulo.
-                    all_points_x = regions[aux]['shape_attributes']['all_points_x']
-                    all_points_y = regions[aux]['shape_attributes']['all_points_y']
+                    all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
+                    all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
                     qtd_points = len(all_points_x)
 
                     points_x = []
@@ -355,11 +356,11 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
                 transcription = regions[aux]['region_attributes']['transcription']
 
                 # Região é um retângulo
-                if regions[aux]['shape_attributes']['name'] == 'rect':
-                    x_inicial = regions[aux]['shape_attributes']['x']
-                    width = regions[aux]['shape_attributes']['width']
-                    y_inicial = regions[aux]['shape_attributes']['y']
-                    height = regions[aux]['shape_attributes']['height']
+                if regions[aux]['region_shape_attributes']['name'] == 'rect':
+                    x_inicial = regions[aux]['region_shape_attributes']['x']
+                    width = regions[aux]['region_shape_attributes']['width']
+                    y_inicial = regions[aux]['region_shape_attributes']['y']
+                    height = regions[aux]['region_shape_attributes']['height']
 
                     x_final = x_inicial + width
                     y_final = y_inicial + height
@@ -380,8 +381,8 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
                         area_n_text.append(area)
 
                 else:
-                    all_points_x = regions[aux]['shape_attributes']['all_points_x']
-                    all_points_y = regions[aux]['shape_attributes']['all_points_y']
+                    all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
+                    all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
                     qtd_points = len(all_points_x)
 
                     points_x = []
@@ -409,7 +410,7 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
 # Retira as informações da pessoa para inserir no txt.
 def get_pessoa_text(pessoa, tipo_texto):
     text = ''
-    if tipo_texto == 'nome':
+    if tipo_texto == 'name': # nome
         text = pessoa.get_nome()
     elif tipo_texto == 's_nome':
         text = pessoa.get_s_nome()
@@ -421,7 +422,7 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = pessoa.get_org()
     elif tipo_texto == 'est':
         text = pessoa.get_est()
-    elif tipo_texto == 'cid_est':
+    elif tipo_texto == 'city': # cid_est
         text = pessoa.get_local()
     elif tipo_texto == 'rg_org_est':
         text = pessoa.get_rg_org_est()
@@ -433,7 +434,7 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = pessoa.get_n_9()
     elif tipo_texto == 'n_reg':
         text = pessoa.get_n_reg()
-    elif tipo_texto == 'n_11':
+    elif tipo_texto == 'prot':
         text = pessoa.get_n_11()
     elif tipo_texto == 'cod_11':
         text = pessoa.get_cod_11()
@@ -638,9 +639,3 @@ def control_mask_gen(tipo_doc, json_arq, img_name, angle):
     fim = time.time()
     tempo = fim - inicio
     print('Tempo de execução:' + str(tempo))
-
-
-
-
-
-

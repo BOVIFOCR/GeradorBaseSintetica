@@ -6,9 +6,9 @@ import cv2 as cv
 import os
 
 import paths
-path_base = paths.path
-path_rot = path_base + r'/saida_rot'
-path_back = path_base + r'/saida_back'
+path_base = '' #paths.path
+path_rot = path_base + r'./rot'
+path_back = path_base + r'./back'
 path_crop = path_rot + r'/crop'
 
 
@@ -193,21 +193,22 @@ def back_gen(img_name, arq, tipo_doc, angle):
     shape_y = img_2_read.shape[0]
     shape_x = img_2_read.shape[1]
 
-    conj_img = [v for k, v in arq.items() if k.startswith(img_name)]
+    # conj_img = [v for k, v in arq.items() if k.startswith(img_name)]
+    regions = arq
 
-    if conj_img is not None:
-        search = conj_img[0]
-        regions = search['regions']
+    if regions is not None:
+        # search = conj_img[0]
+        # regions = search['regions']
         qtd_regions = len(regions)
         aux = 0
 
         while aux < qtd_regions:
             if regions[aux]['region_attributes']['info_type'] == 'p':
-                if regions[aux]['shape_attributes']['name'] == 'rect':
-                    rect_x = regions[aux]['shape_attributes']['x']
-                    rect_x_final = rect_x + regions[aux]['shape_attributes']['width']
-                    rect_y = regions[aux]['shape_attributes']['y']
-                    rect_y_final = rect_y + regions[aux]['shape_attributes']['height']
+                if regions[aux]['region_shape_attributes']['name'] == 'rect':
+                    rect_x = regions[aux]['region_shape_attributes']['x']
+                    rect_x_final = rect_x + regions[aux]['region_shape_attributes']['width']
+                    rect_y = regions[aux]['region_shape_attributes']['y']
+                    rect_y_final = rect_y + regions[aux]['region_shape_attributes']['height']
 
                     rect_x, rect_y, rect_x_final, rect_y_final = rotate_points(shape_x, shape_y, rect_x, rect_y,
                                                                                rect_x_final, rect_y_final, angle)
@@ -227,8 +228,8 @@ def back_gen(img_name, arq, tipo_doc, angle):
                     img_2_read = erase_text(img_2_read, area_text, dominant_color, tipo_doc)
 
                 else:
-                    all_points_x = regions[aux]['shape_attributes']['all_points_x']
-                    all_points_y = regions[aux]['shape_attributes']['all_points_y']
+                    all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
+                    all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
                     qtd_points = len(all_points_x)
                     points = []
 
@@ -270,4 +271,3 @@ def back_gen(img_name, arq, tipo_doc, angle):
             aux = aux + 1
         os.remove(path_rot + r'/' + img_name)
         cv.imwrite(os.path.join(path_back, img_name), img_2_read)
-
