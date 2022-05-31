@@ -83,7 +83,7 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_obs()
     elif tipo_texto == 'cargo':
         text = pessoa.set_cargo()
-    elif tipo_texto == 'd_orig':
+    elif tipo_texto == 'doc': # d_orig
         text = pessoa.set_d_orig()
     elif tipo_texto == 'folha':
         text = pessoa.set_folha()
@@ -95,7 +95,7 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_pis(qtd_chars)
     elif tipo_texto == 'cod_4':
         text = pessoa.set_cod_4()
-    elif tipo_texto == 'n_5':
+    elif tipo_texto == '5-code': # n_5
         text = pessoa.set_n_5()
     elif tipo_texto == 'cod_10':
         text = pessoa.set_cod_10()
@@ -442,7 +442,7 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = pessoa.get_obs()
     elif tipo_texto == 'cargo':
         text = pessoa.get_cargo()
-    elif tipo_texto == 'd_orig':
+    elif tipo_texto == 'd_orig': # d_orig
         text = pessoa.get_d_orig()
     elif tipo_texto == 'folha':
         text = pessoa.get_folha()
@@ -452,9 +452,9 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = pessoa.get_via()
     elif tipo_texto == 'pis':
         text = pessoa.get_pis()
-    elif tipo_texto == 'cod_4':
+    elif tipo_texto == '5-code': # cod_4
         text = pessoa.get_cod_4()
-    elif tipo_texto == 'n_5':
+    elif tipo_texto == 'n_5': # n_5
         text = pessoa.get_n_5()
     elif tipo_texto == 'cod_10':
         text = pessoa.get_cod_10()
