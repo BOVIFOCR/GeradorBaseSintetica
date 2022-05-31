@@ -4,6 +4,7 @@ import image_slicer
 import cv2 as cv
 import dlib
 import os
+import numpy as np
 
 dnn = dlib.cnn_face_detection_model_v1("./files/mmod_human_face_detector.dat")  # Detector pré-treinado.
 
@@ -44,8 +45,29 @@ def detect_face_cnn(orig_img, file_name, angle, pos_x, pos_y):
 
     cv.imwrite(os.path.join(path_tiles, tile_name), img)
 
-    return orig_img
+    return orig_img, rects
 
+def erase_face(img):
+    rects = dnn(img)
+    for (i, rect) in enumerate(rects):
+        x1 = rect.rect.left()
+        y1 = rect.rect.top()
+        x2 = rect.rect.right()
+        y2 = rect.rect.bottom()
+        
+        x_ini = x1 - 20
+        y_ini = y1 - 25
+        x_fin = x2 + 20
+        y_fin = y2 + 25
+
+        img[y_ini:y_fin, x_ini:x_fin] = (255, 255, 255)
+
+        #crop = img.crop((x_ini, y_ini, x_fin, y_fin)).convert('L')
+        #blur_crop = crop.filter(ImageFilter.GaussianBlur(radius=40))
+        #img.paste(blur_crop, (x_ini, y_ini, x_fin, y_fin))
+        
+        #cv.rectangle(np.array(img), (x1, y2), (x2, y2), (255, 0, 0), 3)
+    return img
 
 def rotate_points(shape_x, shape_y, x_ini, y_ini, x_fin, y_fin, angle):
     if angle == 90:
@@ -107,7 +129,7 @@ def slice_img(orig_img, img_name, path_img_rot, angle, control):
         orig_img = detect_face_cnn(orig_img, img_name, angle, pos_x, pos_y)
         orig_img.save(path_output+r'/'+img_name)
         # cv.imwrite(os.path.join(path_output, img_name), orig_img)
-
+        return orig_img
     else:
         tiles = image_slicer.slice(path_img_rot + r'/' + img_name, 2, save=False)
         image_slicer.save_tiles(tiles, directory=path_tiles, prefix='slice')
@@ -129,7 +151,7 @@ def slice_img(orig_img, img_name, path_img_rot, angle, control):
 
         image = image_slicer.join(tiles)
         image.save(path_result + r'/' + str(angle) + '_' + img_name)
-
+        return image
 
 def rotate_img_360dg(orig_img, angle):
     if angle == 90:
@@ -156,7 +178,7 @@ def face_detect(orig_img, img_rotated, img_name, path_img_rot, angle):
 
 def replicate_img(img_name):
     img_read = cv.imread(path_input + r'/' + img_name)
-    img_read_pil = Image.open(path_input+ r'/' +img_name)
+    img_read_pil = Image.open(path_input+ r'/' +img_name).convert('RGB')
 
     rotated_0 = rotate_img_360dg(img_read, 0)
     rotated_90 = rotate_img_360dg(img_read, 90)
