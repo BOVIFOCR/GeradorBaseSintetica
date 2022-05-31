@@ -8,7 +8,7 @@ import re
 import paths
 path_base = ''#paths.path
 
-path_entrada = './input'#path_base
+path_entrada = './results'#path_base //// saida do find_face
 path_saida = path_base + r'./rot'
 path_dpi = path_saida + r'/dpi'
 

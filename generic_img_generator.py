@@ -6,13 +6,14 @@ import os
 import background_generator
 import rotate_images
 import text_2_image
+from find_face import replicate_img
 
 import paths
 path_base = '' #paths.path
 
 # Path com a imagem.
 # path_entrada = path_base + r'/original/BASE_UTIL/BETA'
-path_entrada = './input/'
+path_entrada = './results/'
 
 # Nome do json de saída do VIA ANNOTATOR com as informações de todas as imagens rotuladas.
 # json_name = 'new.json'
@@ -29,20 +30,22 @@ def main():
     # with open(path_entrada + r'/' + json_name, 'r', encoding='utf-8') \
 
     for file_img in os.listdir(path_entrada):
-        with open(json_path + file_img.split('/')[-1].replace('.jpg', '.json'), 'r', encoding='utf-8') \
+        with open(json_path + file_img.split('/')[-1].split('.')[0] + '.json', 'r', encoding='utf-8') \
                 as json_file:
             json_arq = json.load(json_file)
 
         if file_img.endswith('.jpg') or file_img.endswith('.JPG') or file_img.endswith('.jpeg') \
                 or file_img.endswith('.png'):
             img_name = str(file_img)
+            #replicate_img(img_name)
+
             img = cv.imread(path_entrada + r'/' + img_name)
 
             print('***************************')
             print('Processando: ' + img_name)
 
             angle_img, check_img = rotate_images.rotate_img(img, img_name)
-
+						
             if check_img == 1:
                 background_generator.back_gen(img_name, json_arq, tipo_doc, angle=angle_img)
 

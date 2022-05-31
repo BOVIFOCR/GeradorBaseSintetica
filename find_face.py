@@ -5,7 +5,7 @@ import cv2 as cv
 import dlib
 import os
 
-dnn = dlib.cnn_face_detection_model_v1("mmod_human_face_detector.dat")  # Detector pré-treinado.
+dnn = dlib.cnn_face_detection_model_v1("./files/mmod_human_face_detector.dat")  # Detector pré-treinado.
 
 path_input = r'./input'
 path_rot = r'./rot'
