@@ -83,9 +83,9 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_obs()
     elif tipo_texto == 'cargo':
         text = pessoa.set_cargo()
-    elif tipo_texto == 'd_orig':
+    elif tipo_texto == 'comarca': # d_orig
         text = pessoa.set_d_orig()
-    elif tipo_texto == 'folha':
+    elif tipo_texto == 'doc': # folha
         text = pessoa.set_folha()
     elif tipo_texto == 'aspa':
         text = pessoa.set_aspa()
@@ -95,7 +95,7 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_pis(qtd_chars)
     elif tipo_texto == 'cod_4':
         text = pessoa.set_cod_4()
-    elif tipo_texto == 'n_5':
+    elif tipo_texto == '5-code': # n_5
         text = pessoa.set_n_5()
     elif tipo_texto == 'cod_10':
         text = pessoa.set_cod_10()
