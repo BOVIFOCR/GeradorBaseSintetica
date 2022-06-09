@@ -111,7 +111,7 @@ def rgb_noise(img_name, area_n_text):
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
-def gaussian_noise(img_name, area_n_text):
+def gaussian_noise(img_name, file_idx, rep_idx, area_n_text):
     img = cv.imread(path_entrada + r'/' + img_name+'.jpg')
     gauss = np.random.normal(0, 1, img.size)
     gauss = gauss.reshape((img.shape[0], img.shape[1], img.shape[2])).astype('uint8')
@@ -119,54 +119,54 @@ def gaussian_noise(img_name, area_n_text):
     # Add the Gaussian noise to the image
     img_gauss = cv.add(img, gauss)
 
-    new_img_name = text_2_image.create_img_name()
+    new_img_name = text_2_image.create_img_name(file_idx, rep_idx)
     cv.imwrite(os.path.join(path_saida, new_img_name + '.jpg'), img_gauss)
 
     angle = rand_rotation(new_img_name+'.jpg', path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
-def contrast(img_name, factor, area_n_text):
+def contrast(img_name, file_idx, rep_idx, factor, area_n_text):
     im = Image.open(path_entrada + r'/' + img_name + '.jpg')
     enhancer_ctr = ImageEnhance.Contrast(im)
 
     im_output_ctr = enhancer_ctr.enhance(factor)
-    new_img_name = text_2_image.create_img_name()
+    new_img_name = text_2_image.create_img_name(file_idx, rep_idx)
     im_output_ctr.save(path_saida + r'/' + new_img_name + '.jpg')
     angle = rand_rotation(new_img_name + '.jpg', path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
-def brightness(img_name, factor, area_n_text):
+def brightness(img_name, file_idx, rep_idx, factor, area_n_text):
     im = Image.open(path_entrada + r'/' + img_name + '.jpg')
     enhancer_brig = ImageEnhance.Brightness(im)
 
     im_output_brig = enhancer_brig.enhance(factor)
-    new_img_name = text_2_image.create_img_name()
+    new_img_name = text_2_image.create_img_name(file_idx, rep_idx)
     im_output_brig.save(path_saida + r'/' + new_img_name + '.jpg')
     angle = rand_rotation(new_img_name + '.jpg', path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
-def ctr_brg(img_name, area_n_text, tipo_doc):
+def ctr_brg(img_name, file_idx, rep_idx, area_n_text, tipo_doc):
     random.seed()
     factor = round(random.uniform(0.5, 0.9), 2)
-    contrast(img_name, factor, area_n_text)
+    contrast(img_name, file_idx, rep_idx, factor, area_n_text)
 
     random.seed()
     factor = round(random.uniform(0.5, 0.9), 2)
-    brightness(img_name, factor, area_n_text)
+    brightness(img_name, file_idx, rep_idx, factor, area_n_text)
 
     random.seed()
     factor = 1 + round(random.uniform(0.1, 0.3), 2)
-    contrast(img_name, factor, area_n_text)
+    contrast(img_name, file_idx, rep_idx, factor, area_n_text)
 
     if tipo_doc != 'RG':
         random.seed()
         factor = 1 + round(random.uniform(0.1, 0.3), 2)
-        brightness(img_name, factor, area_n_text)
+        brightness(img_name, file_idx, rep_idx, factor, area_n_text)
 
 
-def augmentation(new_img_name, area_n_text, tipo_doc):
-    gaussian_noise(new_img_name, area_n_text)
-    ctr_brg(new_img_name, area_n_text, tipo_doc)
+def augmentation(new_img_name, file_idx, rep_idx, area_n_text, tipo_doc):
+    gaussian_noise(new_img_name, file_idx, rep_idx, area_n_text)
+    ctr_brg(new_img_name, file_idx, rep_idx, area_n_text, tipo_doc)

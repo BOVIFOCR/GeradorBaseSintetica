@@ -572,7 +572,7 @@ def blur_mask(img_name, path_img, tipo_doc):
 
 
 # Cria um nome aleatório para as imagens geradas.
-def create_img_name():
+def create_img_name(f_idx, r_idx):
     num = ''
     random.seed()
     let = ''.join(random.choice(string.ascii_letters) for x in range(7))
@@ -580,12 +580,12 @@ def create_img_name():
     for i in range(7):
         num = num + str(random.randrange(10))
 
-    return num + let
+    return f_idx + '_' + r_idx + '_' + num + let
 
 
 # Faz a multiplicação da mask com a imagem original.
-def mult_img(mask_name, img_name, tipo_doc, area_n_text, param):
-    new_img_name = create_img_name()
+def mult_img(mask_name, img_name, tipo_doc, file_idx, rep_idx, area_n_text, param):
+    new_img_name = create_img_name(file_idx, rep_idx)
     back = cv.imread(os.path.join(path_input, img_name))
     blue_back, green_back, red_back = cv.split(back)
 
@@ -623,19 +623,19 @@ def mult_img(mask_name, img_name, tipo_doc, area_n_text, param):
 
 
 # Chama as funções de ruído e de multiplicação para cada imagem.
-def noise_mask(tipo_doc, img_name, area_n_text):
+def noise_mask(tipo_doc, img_name, file_idx, rep_idx, area_n_text):
     mask_name = 'mask_' + img_name
     blur_mask(mask_name, path_mask, tipo_doc)
-    img_base_name = mult_img(mask_name, img_name, tipo_doc, area_n_text, param=150)
-    images_transformation.augmentation(img_base_name, area_n_text, tipo_doc)
+    img_base_name = mult_img(mask_name, img_name, tipo_doc, file_idx, rep_idx, area_n_text, param=150)
+    images_transformation.augmentation(img_base_name, file_idx, rep_idx, area_n_text, tipo_doc)
 
 
 # Faz a função de main() desse arquivo.
-def control_mask_gen(tipo_doc, json_arq, img_name, angle):
+def control_mask_gen(tipo_doc, json_arq, img_name, file_idx, rep_idx, angle):
     print('GERANDO a mask...')
     inicio = time.time()
     area_n_text = mask_generator(tipo_doc, json_arq, img_name, angle)
-    noise_mask(tipo_doc, img_name, area_n_text)
+    noise_mask(tipo_doc, img_name, file_idx, rep_idx, area_n_text)
     fim = time.time()
     tempo = fim - inicio
     print('Tempo de execução:' + str(tempo))
