@@ -241,12 +241,13 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
 
         while aux < qtd_regions:
             mask_open = Image.open(path_mask + r'/' + mask_name)
-
+                        
+            tag = regions[aux]['region_attributes']['tag']
             if regions[aux]['region_attributes']['info_type'] == 'p' and \
                     len(regions[aux]['region_attributes']) > 1:
 
                 tipo_texto = regions[aux]['region_attributes']['text_type']
-
+    
                 # Região é um retângulo.
                 if regions[aux]['region_shape_attributes']['name'] == 'rect':
                     x_inicial = regions[aux]['region_shape_attributes']['x']
@@ -309,6 +310,7 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
 
                         area = localize_text_area()
                         area.append(text)
+                        area.append(tag)
                         area_n_text.append(area)
                         os.remove(path_mask + r'/temp_mask.jpg')
 
@@ -343,6 +345,7 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
 
                         area = localize_text_area()
                         area.append(text)
+                        area.append(tag)
                         area_n_text.append(area)
                         os.remove(path_mask + r'/temp_mask.jpg')
 
@@ -377,7 +380,7 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
                     height = max_y - min_y
 
                     if transcription != 'X':
-                        area = [min_x, min_y, width, height, transcription]
+                        area = [min_x, min_y, width, height, transcription, tag]
                         area_n_text.append(area)
 
                 else:
@@ -397,13 +400,12 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
                         points_y.append(pts_y)
 
                     if transcription != 'X':
-                        area = [points_x, points_y, width, height, transcription]
+                        area = [points_x, points_y, width, height, transcription, tag]
                         area_n_text.append(area)
 
             aux = aux + 1
     else:
         pass
-
     return area_n_text
 
 
@@ -490,6 +492,7 @@ def write_txt_file(txt_name, area_n_text, angle):
         width = element[2]
         height = element[3]
         transcription = element[4]
+        tag = element[5]
 
         # A informação é um polígono
         if width == -1 and height == -1:
@@ -510,8 +513,8 @@ def write_txt_file(txt_name, area_n_text, angle):
             for a in range(len(final_points_x)):
                 xy.append((final_points_x[a], final_points_y[a]))
 
-            txt_text = txt_text + '{}, {}, {}, {}, {}\n' \
-                .format(final_points_x, final_points_y, width, height, transcription)
+            txt_text = txt_text + '{}, {}, {}, {}, {}, {}\n' \
+                .format(final_points_x, final_points_y, width, height, transcription, tag)
 
             draw.polygon(xy, fill=(255, 255, 255))
 
@@ -529,14 +532,14 @@ def write_txt_file(txt_name, area_n_text, angle):
             width = x_final - x_inicial
             height = y_final - y_inicial
 
-            txt_text = txt_text + '{}, {}, {}, {}, {}\n' \
-                .format(x_inicial, y_inicial, width, height, transcription)
+            txt_text = txt_text + '{}, {}, {}, {}, {}, {}\n' \
+                .format(x_inicial, y_inicial, width, height, transcription, tag)
 
             draw.rectangle((x_inicial, y_inicial, x_final, y_final), fill=(255, 255, 255))
 
     im.save(path_output + r'/' + txt_name + '_mask_GT' + '.jpg')
     with open(path_output + r'/' + txt_name + '_GT.txt', 'w') as file:
-        file.write('x, y, width, height, transcription\n')
+        file.write('x, y, width, height, transcription, tag\n')
         file.write(txt_text)
 
 
