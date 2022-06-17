@@ -59,7 +59,7 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_cpf()
     elif tipo_texto == 'rg':
         text = pessoa.set_rg(tipo_doc)
-    elif tipo_texto == 'org': # org
+    elif tipo_texto == 'org' or tipo_texto == 'inst': # org
         text = pessoa.set_org()
     elif tipo_texto == 'est':
         text = pessoa.set_est()

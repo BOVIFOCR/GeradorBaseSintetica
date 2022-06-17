@@ -29,7 +29,7 @@ def main():
 
     # with open(path_entrada + r'/' + json_name, 'r', encoding='utf-8') \
 
-    for idx, file_img in enumerate(os.listdir(path_entrada)):
+    for idx, file_img in enumerate(os.listdir(path_entrada)[2:]):
 
         if file_img.endswith('.jpg') or file_img.endswith('.JPG') or file_img.endswith('.jpeg') \
                 or file_img.endswith('.png'):

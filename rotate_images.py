@@ -65,7 +65,7 @@ def rotate_img(img, img_name):
 
     except Exception:
         print('********************************')
-        print('Erro na imagem: ' + img_name + Exception)
+        print('Erro na imagem: ' + img_name, Exception)
         print('********************************')
 
     os.remove(path_dpi + r'/' + img_name)
