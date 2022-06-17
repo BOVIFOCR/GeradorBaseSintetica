@@ -26,6 +26,8 @@ def parse_tag(tag):
         return 'doc'
     elif tag == 'fator-rh':
         return 'rh'
+    elif tag == 'inst':
+        return 'org'
     elif tag == 'protocol' or tag == 'unknown':
         return 'unknown'
 
