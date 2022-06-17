@@ -3,7 +3,7 @@ import sys
 import json
 import ast
 
-label_path = './label_aux/'
+label_path = './labels/'
 
 with open(sys.argv[1]) as fd:
     csr = csv.reader(fd)
