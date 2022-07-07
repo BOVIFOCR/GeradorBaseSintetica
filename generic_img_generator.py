@@ -25,17 +25,18 @@ def main():
 
     # Número de vezes que o processo irá se repetir para criar mais de uma imagem com informações diferentes a
     # partir de uma mesma imagem.
-    repetir = 150
+    repetir = 1
 
     # with open(path_entrada + r'/' + json_name, 'r', encoding='utf-8') \
 
-    for idx, file_img in enumerate(os.listdir(path_entrada)[2:]):
+    fnames = os.listdir(path_entrada)
+    for idx, file_img in enumerate(fnames):
+        labels_file = json_path + file_img.split('.')[0] + '.json'
 
-        if file_img.endswith('.jpg') or file_img.endswith('.JPG') or file_img.endswith('.jpeg') \
-                or file_img.endswith('.png'):
-
-            with open(json_path + file_img.split('.')[0] + '.json', 'r', encoding='utf-8') \
-                    as json_file:
+        if os.path.isfile(labels_file) and (
+                file_img.endswith('.jpg') or file_img.endswith('.JPG') or file_img.endswith('.jpeg') \
+                or file_img.endswith('.png')):
+            with open(labels_file, encoding='utf-8') as json_file:
                 json_arq = json.load(json_file)
 
             img_name = str(file_img)
@@ -43,7 +44,10 @@ def main():
             img = cv.imread(path_entrada + r'/' + img_name)
             print('***************************')
             print('Processando: ' + img_name)
-
+            for idx in range(len(json_arq)):
+                json_arq[idx]['region_shape_attributes']['all_points_x'] = list(map(int, json_arq[idx]['region_shape_attributes']['all_points_x']))
+                json_arq[idx]['region_shape_attributes']['all_points_y'] = list(map(int, json_arq[idx]['region_shape_attributes']['all_points_y']))
+            print(json_arq)
             print('***************************')
             print('Apagando face')
             img = erase_face(img)
@@ -53,8 +57,8 @@ def main():
             if check_img == 1:
                 background_generator.back_gen(img_name, json_arq, tipo_doc, angle=angle_img)
 
-                # print('Background gerado!')
-                # print('-----------------------------')
+                print('Background gerado!')
+                print('-----------------------------')
 
                 for i in range(repetir):
                     text_2_image.control_mask_gen(tipo_doc, json_arq, img_name, str(idx), str(i), angle=angle_img)

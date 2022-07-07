@@ -9,7 +9,7 @@ import paths
 path_base = '' #paths.path
 path_rot = path_base + r'./rot'
 path_back = path_base + r'./back'
-path_crop = path_rot + r'/crop'
+path_crop = path_base + r'./crop'
 
 
 # Checa se os pixels estão dentro do intervalo para pegar os 3 mais próximos.
@@ -235,7 +235,7 @@ def back_gen(img_name, arq, tipo_doc, angle):
 
                     for i in range(qtd_points):
                         points.append(rotate_poly(shape_x, shape_y, all_points_x[i], all_points_y[i], angle))
-                    pts = np.asarray(points)
+                    pts = np.asarray(points, dtype=int)
                     pts = pts.reshape((-1, 1, 2))
                     cv.polylines(img_2_read, pts, isClosed=True, color=(0, 0, 0))
                     cv.fillPoly(img_2_read, [pts], (0, 0, 0))

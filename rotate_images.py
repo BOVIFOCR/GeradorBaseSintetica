@@ -6,11 +6,11 @@ import os
 import re
 
 import paths
-path_base = ''#paths.path
+path_base = '.'#paths.path
 
 path_entrada = './results'#path_base //// saida do find_face
-path_saida = path_base + r'./rot'
-path_dpi = path_saida + r'/dpi'
+path_saida = path_base + r'/rot'
+path_dpi = path_base + r'/dpi'
 
 # Tesseract path
 #pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
@@ -63,9 +63,9 @@ def rotate_img(img, img_name):
         cv.imwrite(os.path.join(path_saida, img_name), new_img)
         check_img = 1
 
-    except Exception:
+    except Exception as e:
         print('********************************')
-        print('Erro na imagem: ' + img_name, Exception)
+        print(f'Erro na imagem: {img_name}: {str(e)}')
         print('********************************')
 
     os.remove(path_dpi + r'/' + img_name)

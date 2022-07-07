@@ -20,3 +20,5 @@ crop/*
 dpi/*
 __pycache__/*
 .venv
+log.log
+via.csv

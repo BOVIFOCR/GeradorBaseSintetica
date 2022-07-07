@@ -1,53 +1,55 @@
+import ast
 import csv
 import sys
 import json
-import ast
+import os
+
 
 label_path = './labels/'
 
 with open(sys.argv[1]) as fd:
     csr = csv.reader(fd)
-    ls = [x for x in csr]
+    ls = list(csr)
 
 headers = ls[0]
 ls = ls[1:]
 fs = {}
 
 def parse_tag(tag):
-    if tag == 'nome' or tag.startswith('ass') or tag == 'filiacao':
+    if tag in ('nome', 'nomeMae', 'nomePai'):
         return 'name'
-    elif tag == 'data-nascimento' or tag == 'data-expedicao':
+    elif tag in ('dataNascimento', 'dataexp'):
         return 'date'
     elif tag == 'naturalidade':
-        return 'city'
-    elif tag == 'obs' or tag == 'org' or tag == 'cpf' or tag == 'rg' or tag == '5-code' or tag == 'comarca':
+        return 'city-est'
+    elif tag in ('uf'):
+        return 'state'
+    else:
         return tag
-    elif tag == 'doc-origem':
-        return 'doc'
-    elif tag == 'fator-rh':
-        return 'rh'
-    elif tag == 'inst':
-        return 'org'
-    elif tag == 'protocol' or tag == 'unknown':
-        return 'unknown'
 
 for line in ls:
     if line[0] not in fs:
         fs[line[0]] = []
-    data = {}
-    data[headers[4]] = int(line[4])
-    data[headers[5]] = ast.literal_eval(line[5])
-    data[headers[6]] = ast.literal_eval(line[6])
-    tag = data[headers[6]]['tag']
-    if tag.startswith('info') or tag == 'meta':
-        data[headers[6]]['text_type'] = 'd'
-        data[headers[6]]['info_type'] = 'd'
+    data = {
+        headers[4]: int(line[4]),
+        headers[5]: ast.literal_eval(line[5]),
+        headers[6]: ast.literal_eval(line[6])
+    }
+
+    if data[headers[6]]['tag_type'] == 'sensitive':
+        data[headers[6]] |= {
+            'text_type': parse_tag(data[headers[6]]['tag']),
+            'info_type': 'p'
+        }
     else:
-        data[headers[6]]['text_type'] = 'p'
-        data[headers[6]]['info_type'] = parse_tag(tag)
+        data[headers[6]] |= {
+            'text_type': 'd',
+            'info_type': 'd'
+        }
 
     fs[line[0]].append(data)
 
+os.makedirs(label_path, exist_ok=True)
 for key in fs.keys():
     with open(label_path + key.split('.')[0] + '.json', 'w') as fd:
         fd.write(json.dumps(fs[key], indent=2))

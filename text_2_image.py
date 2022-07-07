@@ -16,8 +16,8 @@ path_base = '' # paths.path
 
 path_input = path_base + r'./back'
 path_mask = path_base + r'./mask'
-path_crops = path_mask + r'/crops'
-path_crops_teste = path_crops + r'/teste'
+path_crops = path_base + r'/crops'
+path_crops_teste = path_base + r'/teste'
 path_output = './reboot' #path_base + r'/reboot'
 
 # CNH
@@ -64,6 +64,8 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
     elif tipo_texto == 'est':
         text = pessoa.set_est()
     elif tipo_texto == 'city': # cid_est
+        text = pessoa.set_cid_est(qtd_chars)
+    elif tipo_texto == 'city-est': # cid_est
         text = pessoa.set_cid_est(qtd_chars)
     elif tipo_texto == 'rg_org_est':
         text = pessoa.set_rg_org_est()
@@ -241,13 +243,13 @@ def mask_generator(tipo_doc, json_arq, img_name, angle):
 
         while aux < qtd_regions:
             mask_open = Image.open(path_mask + r'/' + mask_name)
-                        
+
             tag = regions[aux]['region_attributes']['tag']
             if regions[aux]['region_attributes']['info_type'] == 'p' and \
                     len(regions[aux]['region_attributes']) > 1:
 
                 tipo_texto = regions[aux]['region_attributes']['text_type']
-    
+
                 # Região é um retângulo.
                 if regions[aux]['region_shape_attributes']['name'] == 'rect':
                     x_inicial = regions[aux]['region_shape_attributes']['x']
@@ -426,6 +428,8 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = pessoa.get_est()
     elif tipo_texto == 'city': # cid_est
         text = pessoa.get_local()
+    elif tipo_text == 'city-est':
+        text = f'{pessoa.get_est()} - {pessoa.get_local()}'
     elif tipo_texto == 'rg_org_est':
         text = pessoa.get_rg_org_est()
     elif tipo_texto == 'data':
@@ -474,6 +478,8 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = 'RG ANTERIOR'
     elif tipo_texto == 'naci':
         text = 'BRASILEIRA'
+    elif tipo_texto == 'orgaoEmissor':
+        text = f'SSP-{pessoa.get_est()}'
     else:
         pass
     return text
@@ -575,7 +581,7 @@ def blur_mask(img_name, path_img, tipo_doc):
 
 
 # Cria um nome aleatório para as imagens geradas.
-def create_img_name(f_idx, r_idx):
+def create_img_name(img_name):
     num = ''
     random.seed()
     let = ''.join(random.choice(string.ascii_letters) for x in range(7))
@@ -583,12 +589,12 @@ def create_img_name(f_idx, r_idx):
     for i in range(7):
         num = num + str(random.randrange(10))
 
-    return f_idx + '_' + r_idx + '_' + num + let
+    return img_name + '_' + num + let
 
 
 # Faz a multiplicação da mask com a imagem original.
 def mult_img(mask_name, img_name, tipo_doc, file_idx, rep_idx, area_n_text, param):
-    new_img_name = create_img_name(file_idx, rep_idx)
+    new_img_name = create_img_name(img_name)
     back = cv.imread(os.path.join(path_input, img_name))
     blue_back, green_back, red_back = cv.split(back)
 
@@ -619,7 +625,9 @@ def mult_img(mask_name, img_name, tipo_doc, file_idx, rep_idx, area_n_text, para
                     pass
 
     final_img = cv.merge((blue_back, green_back, red_back))
-    cv.imwrite(os.path.join(path_output, new_img_name + '.jpg'), final_img)
+    outfpath = os.path.join(path_output, new_img_name + '.jpg')
+    print(f'storing at {outfpath}')
+    cv.imwrite(outfpath, final_img)
     write_txt_file(new_img_name, area_n_text, angle=0)  # angle = 0 pq a mask final foi gerada na posição de 0 graus.
 
     return new_img_name
@@ -630,7 +638,7 @@ def noise_mask(tipo_doc, img_name, file_idx, rep_idx, area_n_text):
     mask_name = 'mask_' + img_name
     blur_mask(mask_name, path_mask, tipo_doc)
     img_base_name = mult_img(mask_name, img_name, tipo_doc, file_idx, rep_idx, area_n_text, param=150)
-    images_transformation.augmentation(img_base_name, file_idx, rep_idx, area_n_text, tipo_doc)
+    # images_transformation.augmentation(img_base_name, file_idx, rep_idx, area_n_text, tipo_doc)
 
 
 # Faz a função de main() desse arquivo.
