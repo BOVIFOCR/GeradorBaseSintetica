@@ -4,8 +4,8 @@ import sys
 import json
 import os
 
+import paths
 
-label_path = './labels/'
 
 with open(sys.argv[1]) as fd:
     csr = csv.reader(fd)
@@ -16,9 +16,7 @@ ls = ls[1:]
 fs = {}
 
 def parse_tag(tag):
-    if tag in ('nome', 'nomeMae', 'nomePai'):
-        return 'name'
-    elif tag in ('dataNascimento', 'dataexp'):
+    if tag in ('dataNascimento', 'dataexp'):
         return 'date'
     elif tag == 'naturalidade':
         return 'city-est'
@@ -49,7 +47,7 @@ for line in ls:
 
     fs[line[0]].append(data)
 
-os.makedirs(label_path, exist_ok=True)
+os.makedirs(paths.json_path, exist_ok=True)
 for key in fs.keys():
-    with open(label_path + key.split('.')[0] + '.json', 'w') as fd:
+    with open(paths.json_path + key.split('.')[0] + '.json', 'w') as fd:
         fd.write(json.dumps(fs[key], indent=2))

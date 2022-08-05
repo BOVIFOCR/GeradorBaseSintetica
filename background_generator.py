@@ -6,18 +6,11 @@ import cv2 as cv
 import os
 
 import paths
-path_base = '' #paths.path
-path_rot = path_base + r'./rot'
-path_back = path_base + r'./back'
-path_crop = path_base + r'./crop'
 
 
 # Checa se os pixels estão dentro do intervalo para pegar os 3 mais próximos.
 def check_pixels(borders, pixel_correction=3):
-    check = False
-    if borders[0] - pixel_correction > 0:
-        check = True
-    return check
+    return borders[0] - pixel_correction > 0
 
 
 # Retira os pixels pretos do polylines.
@@ -44,22 +37,12 @@ def fill_black_area(min_x, min_y, max_x, max_y, pixel_correction, limit_x, limit
         max_x = limit_x - 1
     else:
         max_x = max_x + pixel_correction
-
     if max_y + pixel_correction >= limit_y:
         max_y = limit_y - 1
     else:
         max_y = max_y + pixel_correction
-
-    if min_x - pixel_correction < 0:
-        min_x = 0
-    else:
-        min_x = min_x - pixel_correction
-
-    if min_y - pixel_correction < 0:
-        min_y = 0
-    else:
-        min_y = min_y - pixel_correction
-
+    min_x = max(min_x - pixel_correction, 0)
+    min_y = max(min_y - pixel_correction, 0)
     return [min_x, min_y, max_x, max_y]
 
 
@@ -83,16 +66,12 @@ def create_rect_area(x_inicial, y_inicial, x_final, y_final):
 def correct_color(img, tp, dom_color, tipo_doc):
     if check_pixels(tp):
         window = np.array([img[tp[0] - 3, tp[1]], img[tp[0] - 2, tp[1]], img[tp[0] - 1, tp[1]]])
+
         mean_pixel = np.mean(window)
-
-        if tipo_doc == 'CPF':
+        if tipo_doc != 'CPF' and mean_pixel > dom_color or tipo_doc == 'CPF':
             img[tp[0]][tp[1]] = mean_pixel
-
         else:
-            if mean_pixel > dom_color:
-                img[tp[0]][tp[1]] = mean_pixel
-            else:
-                img[tp[0]][tp[1]] = dom_color
+            img[tp[0]][tp[1]] = dom_color
 
 
 # Apaga o texto.
@@ -186,88 +165,59 @@ def rotate_poly(shape_x, shape_y, point_x, point_y, angle):
 
 
 # Gera as imagens do background.
-def back_gen(img_name, arq, tipo_doc, angle):
-    img_2_read = cv.imread(path_rot + r'/' + img_name)
-    crop_name = 'crop.jpg'
-
-    shape_y = img_2_read.shape[0]
-    shape_x = img_2_read.shape[1]
-
-    # conj_img = [v for k, v in arq.items() if k.startswith(img_name)]
+def back_gen(img, img_name, arq, tipo_doc, angle):
+    shape_y = img.shape[0]
+    shape_x = img.shape[1]
     regions = arq
-
     if regions is not None:
-        # search = conj_img[0]
-        # regions = search['regions']
         qtd_regions = len(regions)
-        aux = 0
-
-        while aux < qtd_regions:
+        crop_name = 'crop.jpg'
+        for aux in range(qtd_regions):
             if regions[aux]['region_attributes']['info_type'] == 'p':
                 if regions[aux]['region_shape_attributes']['name'] == 'rect':
                     rect_x = regions[aux]['region_shape_attributes']['x']
                     rect_x_final = rect_x + regions[aux]['region_shape_attributes']['width']
                     rect_y = regions[aux]['region_shape_attributes']['y']
                     rect_y_final = rect_y + regions[aux]['region_shape_attributes']['height']
-
-                    rect_x, rect_y, rect_x_final, rect_y_final = rotate_points(shape_x, shape_y, rect_x, rect_y,
-                                                                               rect_x_final, rect_y_final, angle)
+                    rect_x, rect_y, rect_x_final, rect_y_final = rotate_points(shape_x, shape_y, rect_x, rect_y, rect_x_final, rect_y_final, angle)
 
                     area_text = create_rect_area(rect_x, rect_y, rect_x_final, rect_y_final)
-
-
-                    crop_img = img_2_read[rect_y:rect_y_final, rect_x:rect_x_final]
-                    cv.imwrite(os.path.join(path_crop, crop_name), crop_img)
-
-                    color_thief = ColorThief(path_crop + r'/' + crop_name)
+                    crop_img = img[rect_y:rect_y_final, rect_x:rect_x_final]
+                    cv.imwrite(os.path.join(paths.path_crop, crop_name), crop_img)
+                    color_thief = ColorThief(paths.path_crop + '/' + crop_name)
                     palette = color_thief.get_palette(color_count=2)
                     dominant_color = palette[0]
-
-                    os.remove(path_crop + r'/' + crop_name)
-
-                    img_2_read = erase_text(img_2_read, area_text, dominant_color, tipo_doc)
-
+                    os.remove(paths.path_crop + '/' + crop_name)
+                    img = erase_text(img, area_text, dominant_color, tipo_doc)
                 else:
                     all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
                     all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
                     qtd_points = len(all_points_x)
-                    points = []
+                    points = [rotate_poly(shape_x, shape_y, all_points_x[i], all_points_y[i], angle) for i in range(qtd_points)]
 
-                    for i in range(qtd_points):
-                        points.append(rotate_poly(shape_x, shape_y, all_points_x[i], all_points_y[i], angle))
                     pts = np.asarray(points, dtype=int)
                     pts = pts.reshape((-1, 1, 2))
-                    cv.polylines(img_2_read, pts, isClosed=True, color=(0, 0, 0))
-                    cv.fillPoly(img_2_read, [pts], (0, 0, 0))
-
+                    cv.polylines(img, pts, isClosed=True, color=(0, 0, 0))
+                    cv.fillPoly(img, [pts], (0, 0, 0))
                     pixel_correction = 3
-
                     min_x = min(all_points_x)
                     min_y = min(all_points_y)
                     max_y = max(all_points_y)
                     max_x = max(all_points_x)
-
                     min_x, min_y, max_x, max_y = rotate_points(shape_x, shape_y, min_x, min_y, max_x, max_y, angle)
 
                     correct_values = fill_black_area(min_x, min_y, max_x, max_y, pixel_correction, shape_x, shape_y)
+
                     min_x = correct_values[0]
                     min_y = correct_values[1]
                     max_x = correct_values[2]
                     max_y = correct_values[3]
-
                     area_poly = create_rect_area(min_x, min_y, max_x, max_y)
-
-                    crop_img = img_2_read[min_y:max_y, min_x:max_x]
-                    cv.imwrite(os.path.join(path_crop, crop_name), crop_img)
-
-                    color_thief = ColorThief(path_crop + r'/' + crop_name)
+                    crop_img = img[min_y:max_y, min_x:max_x]
+                    cv.imwrite(os.path.join(paths.path_crop, crop_name), crop_img)
+                    color_thief = ColorThief(paths.path_crop + '/' + crop_name)
                     palette = color_thief.get_palette(color_count=2)
                     dominant_color = palette[0]
-
-                    os.remove(path_crop + r'/' + crop_name)
-
-                    img_2_read = correct_polyline_spaces(area_poly, img_2_read, dominant_color, tipo_doc)
-
-            aux = aux + 1
-        os.remove(path_rot + r'/' + img_name)
-        cv.imwrite(os.path.join(path_back, img_name), img_2_read)
+                    os.remove(paths.path_crop + '/' + crop_name)
+                    img = correct_polyline_spaces(area_poly, img, dominant_color, tipo_doc)
+        cv.imwrite(os.path.join(paths.path_back, img_name), img)

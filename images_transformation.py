@@ -1,4 +1,5 @@
 # Arquivo que faz o data augmentation da imagem gerada.
+import itertools
 from PIL import Image, ImageEnhance
 import numpy as np
 import cv2 as cv
@@ -8,15 +9,12 @@ import os
 
 import text_2_image
 
-path_base = '' #paths.path
-path_entrada = path_base + r'./reboot'
-path_saida = path_entrada
 
 # json_original = 'via_export_json.json'
 json_original = './new.json'
 
 def rotate_bound(img_name):
-    img = cv.imread(path_entrada + r'/' + img_name)
+    img = cv.imread(paths.path_saida + r'/' + img_name)
     random.seed()
     angle = random.randint(0, 360)
     # grab the dimensions of the image and then determine the
@@ -37,7 +35,7 @@ def rotate_bound(img_name):
     M[1, 2] += (nH / 2) - cY
     # perform the actual rotation and return the image
     rotated = cv.warpAffine(img, M, (nW, nH))
-    cv.imwrite(os.path.join(path_saida, img_name), rotated)
+    cv.imwrite(os.path.join(paths.path_saida, img_name), rotated)
     return rotated
 
 
@@ -51,9 +49,7 @@ def motion_blur(img):
     # Normaliza.
     kernel_v /= kernel_size
 
-    # Aplica o kernel
-    vertical_mb = cv.filter2D(img, -1, kernel_v)
-    return vertical_mb
+    return cv.filter2D(img, -1, kernel_v)
 
 
 def rand_rotation(img_name, path_img):
@@ -81,38 +77,29 @@ def rand_rotation(img_name, path_img):
 
 
 def rgb_noise(img_name, area_n_text):
-    img = cv.imread(path_entrada + r'/' + img_name + '.jpg')
+    img = cv.imread(paths.path_saida + '/' + img_name + '.jpg')
     random.seed()
     sel_blue = 0
-
     random.seed()
     sel_green = 0
-
     random.seed()
     sel_red = 20
-
     blue_img, green_img, red_img = cv.split(img)
-
     y = blue_img.shape[0]
     x = blue_img.shape[1]
-
-    for j in range(y):
-        for i in range(x):
-            blue_img[j][i] = blue_img[j][i] + sel_blue
-            green_img[j][i] = green_img[j][i] + sel_green
-            red_img[j][i] = red_img[j][i] + sel_red
-
+    for j, i in itertools.product(range(y), range(x)):
+        blue_img[j][i] = blue_img[j][i] + sel_blue
+        green_img[j][i] = green_img[j][i] + sel_green
+        red_img[j][i] = red_img[j][i] + sel_red
     img = cv.merge((blue_img, green_img, red_img))
-
     new_img_name = 'rgb_' + img_name
-    cv.imwrite(os.path.join(path_saida, new_img_name + '.jpg'), img)
-
-    angle = rand_rotation(new_img_name + '.jpg', path_saida)
+    cv.imwrite(os.path.join(paths.path_saida, new_img_name + '.jpg'), img)
+    angle = rand_rotation(new_img_name + '.jpg', paths.path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
 def gaussian_noise(img_name, file_idx, rep_idx, area_n_text):
-    img = cv.imread(path_entrada + r'/' + img_name+'.jpg')
+    img = cv.imread(paths.path_saida + r'/' + img_name+'.jpg')
     gauss = np.random.normal(0, 1, img.size)
     gauss = gauss.reshape((img.shape[0], img.shape[1], img.shape[2])).astype('uint8')
 
@@ -120,31 +107,31 @@ def gaussian_noise(img_name, file_idx, rep_idx, area_n_text):
     img_gauss = cv.add(img, gauss)
 
     new_img_name = text_2_image.create_img_name(file_idx, rep_idx)
-    cv.imwrite(os.path.join(path_saida, new_img_name + '.jpg'), img_gauss)
+    cv.imwrite(os.path.join(paths.path_saida, new_img_name + '.jpg'), img_gauss)
 
-    angle = rand_rotation(new_img_name+'.jpg', path_saida)
+    angle = rand_rotation(new_img_name+'.jpg', paths.path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
 def contrast(img_name, file_idx, rep_idx, factor, area_n_text):
-    im = Image.open(path_entrada + r'/' + img_name + '.jpg')
+    im = Image.open(paths.path_saida + r'/' + img_name + '.jpg')
     enhancer_ctr = ImageEnhance.Contrast(im)
 
     im_output_ctr = enhancer_ctr.enhance(factor)
     new_img_name = text_2_image.create_img_name(file_idx, rep_idx)
-    im_output_ctr.save(path_saida + r'/' + new_img_name + '.jpg')
-    angle = rand_rotation(new_img_name + '.jpg', path_saida)
+    im_output_ctr.save(paths.path_saida + r'/' + new_img_name + '.jpg')
+    angle = rand_rotation(new_img_name + '.jpg', paths.path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 
 def brightness(img_name, file_idx, rep_idx, factor, area_n_text):
-    im = Image.open(path_entrada + r'/' + img_name + '.jpg')
+    im = Image.open(paths.path_saida + r'/' + img_name + '.jpg')
     enhancer_brig = ImageEnhance.Brightness(im)
 
     im_output_brig = enhancer_brig.enhance(factor)
     new_img_name = text_2_image.create_img_name(file_idx, rep_idx)
-    im_output_brig.save(path_saida + r'/' + new_img_name + '.jpg')
-    angle = rand_rotation(new_img_name + '.jpg', path_saida)
+    im_output_brig.save(paths.path_saida + r'/' + new_img_name + '.jpg')
+    angle = rand_rotation(new_img_name + '.jpg', paths.path_saida)
     text_2_image.write_txt_file(new_img_name, area_n_text, angle)
 
 

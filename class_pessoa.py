@@ -53,82 +53,50 @@ class Person:
         self.aspa = []
 
     def set_nome(self, qtd_chars):
-        file = open(r'./files/nome.txt', 'r', encoding = "ISO-8859-1")
+        file = open('./files/nome.txt', 'r', encoding="ISO-8859-1")
         names = file.readlines()
-
         full_name = ''
-        for i in range(3):
+        for _ in range(3):
             random.seed()
             sel_num = random.randint(0, len(names) - 1)
-            full_name = full_name+(names[sel_num].rstrip('\n'))+''
-
-        full_name = full_name[:len(full_name)-1]
-
+            full_name = full_name + names[sel_num].rstrip('\n') + ''
+        full_name = full_name[:-1]
         if len(full_name) > qtd_chars:
-            full_name = full_name[0:qtd_chars]
+            full_name = full_name[:qtd_chars]
         self.nome.append(full_name)
         return full_name
-
-    # TODO: Pode dar merda.
-    def set_s_nome(self):
-        file = open(r'./files/s_nome.txt')
-        s_nomes = file.readlines()
-
-        random.seed()
-        sel_num = random.randint(0, len(s_nomes) - 1)
-        sobrenome = (s_nomes[sel_num].rstrip('\n'))
-        sobrenome = sobrenome.upper()
-
-        self.s_nome.append(sobrenome)
-        return sobrenome
 
     def set_cpf(self):
         def formata_cpf(n_cpf):
             formatado = ''
             for i in range(len(n_cpf)):
                 formatado = formatado + n_cpf[i]
-
-                if i == 2 or i == 5:
+                if i in [2, 5]:
                     formatado = formatado + '.'
                 elif i == 8:
                     formatado = formatado + '-'
-
             return formatado
 
         def dig_verificador(n_cpf):
             int_values = []
-
-            if len(n_cpf) == 9:
-                peso = 10
-            else:
-                peso = 11
-
+            peso = 10 if len(n_cpf) == 9 else 11
             for i in range(len(n_cpf)):
                 int_values.append(int(n_cpf[i]) * (peso - i))
-
             soma = sum(int_values)
             resto = soma % 11
-
-            if resto == 0 or resto == 1:
-                dig = '0'
-            else:
-                dig = str(11 - resto)
+            dig = '0' if resto in [0, 1] else str(11 - resto)
             return dig
 
         def make_cpf():
             seq_cpf = ''
-
             for _ in range(9):
                 random.seed()
                 sel_num = random.randint(0, 9)
                 seq_cpf = seq_cpf + str(sel_num)
-
             f_dig = dig_verificador(seq_cpf)
             seq_cpf = seq_cpf + f_dig
-
             s_dig = dig_verificador(seq_cpf)
             seq_cpf = seq_cpf + s_dig
-
             seq_cpf = formata_cpf(seq_cpf)
             return seq_cpf
 
@@ -141,31 +109,24 @@ class Person:
             rg_f = ''
             for i in range(len(n_rg)):
                 rg_f = rg_f + n_rg[i]
-
-                if i == 1 or i == 4:
+                if i in [1, 4]:
                     rg_f = rg_f + '.'
                 elif i == 7:
                     rg_f = rg_f + '-'
-
             return rg_f
 
         def verf_rg(n_rg):
             dig_v = str(random.randint(0, 9))
             int_values = []
             peso = 2
-
             for i in range(len(n_rg)):
                 int_values.append(int(n_rg[i]) * (peso + i))
             soma = sum(int_values)
-
-            for x in range(0, 10):
-                result = soma + (x * 100)
+            for x in range(10):
+                result = soma + x * 100
                 if result % 11 == 0:
                     dig_v = str(x)
                     break
-                else:
-                    pass
-
             return dig_v
 
         def make_rg():
@@ -174,14 +135,10 @@ class Person:
                 random.seed()
                 sel_num = random.randint(0, 9)
                 seq_rg = seq_rg + str(sel_num)
-
             dig = verf_rg(seq_rg)
             seq_rg = seq_rg + dig
-
-            # TODO: CNH comenta o formata_rg
             if tipo_doc == 'RG':
                 seq_rg = formata_rg(seq_rg)
-
             return seq_rg
 
         r_rg = make_rg()
@@ -192,16 +149,11 @@ class Person:
         def verf_cnh_num_espelho(espelho):
             int_values = []
             peso = 10
-
             for x in range(len(espelho)):
                 int_values.append(int(espelho[x]) * (peso - x))
             soma = sum(int_values)
             resto = soma % 11
-
-            if resto == 0 or resto == 1:
-                dig = '0'
-            else:
-                dig = str(11 - resto)
+            dig = '0' if resto in [0, 1] else str(11 - resto)
             return dig
 
         def make_n_9():
@@ -215,24 +167,19 @@ class Person:
             return seq_n_9
 
         r_n_9 = make_n_9()
-
         if len(r_n_9) > qtd_chars:
-            r_n_9 = r_n_9[0:qtd_chars]
-
+            r_n_9 = r_n_9[:qtd_chars]
         self.n_9.append(r_n_9)
         return r_n_9
 
     def set_folha(self):
         c_nasc = 'C.NAS='
-        a_folha = 'FL='
         livro = 'LV='
-
         lista = random.sample(range(1, 500), 3)
-        c_nasc = c_nasc+str(lista[0])+' '
-        livro = livro + str(lista[1])+' '
-        a_folha = a_folha+str(lista[2])
-
-        final = c_nasc+livro+a_folha
+        c_nasc = c_nasc + str(lista[0]) + ' '
+        livro = livro + str(lista[1]) + ' '
+        a_folha = 'FL=' + str(lista[2])
+        final = c_nasc + livro + a_folha
         self.folha.append(final)
         return final
 
@@ -243,12 +190,9 @@ class Person:
             sel_num = random.randint(0, 9)
             pis_pasep = pis_pasep + str(sel_num)
             if x == 4:
-                pis_pasep = pis_pasep+'/'
-            else:
-                pass
-
+                pis_pasep = pis_pasep + '/'
         if len(pis_pasep) > qtd_chars:
-            pis_pasep = pis_pasep[0:qtd_chars]
+            pis_pasep = pis_pasep[:qtd_chars]
         self.pis.append(pis_pasep)
         return pis_pasep
 
@@ -260,59 +204,48 @@ class Person:
             seq_n_5 = seq_n_5 + str(sel_num)
             if x == 3:
                 seq_n_5 = seq_n_5 + '-'
-            else:
-                pass
-
         self.n_5.append(seq_n_5)
         return seq_n_5
 
     def set_n_6(self):
         seq_n_6 = ''
-        for x in range(5):
+        for _ in range(5):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_n_6 = seq_n_6 + str(sel_num)
-
         self.n_6.append(seq_n_6)
         return seq_n_6
 
     def set_cod_4(self):
         seq_n_nh = 'NH '
-        for x in range(2):
+        for _ in range(2):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_n_nh = seq_n_nh + str(sel_num)
-
         self.cod_4.append(seq_n_nh)
         return seq_n_nh
 
     def set_cod_8(self):
         seq_cod_8 = ''
-        for x in range(7):
+        for _ in range(7):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_cod_8 = seq_cod_8 + str(sel_num)
-
         self.cod_8.append(seq_cod_8)
         return seq_cod_8
 
     def set_cod_10(self):
-        alfabeto = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-                    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        alfabeto = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
         random.seed()
-        sel_letra = random.randint(0, len(alfabeto)-1)
-
+        sel_letra = random.randint(0, len(alfabeto) - 1)
         seq_cod_10 = alfabeto[sel_letra]
-
         for x in range(8):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_cod_10 = seq_cod_10 + str(sel_num)
             if x == 2:
                 seq_cod_10 = seq_cod_10 + '-'
-            else:
-                pass
-
         self.cod_10.append(seq_cod_10)
         return seq_cod_10
 
@@ -369,21 +302,19 @@ class Person:
 
     def set_n_reg(self):
         seq_n_reg = ''
-        for x in range(11):
+        for _ in range(11):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_n_reg = seq_n_reg + str(sel_num)
-
         self.n_reg.append(seq_n_reg)
         return seq_n_reg
 
     def set_n_11(self):
         seq_n_11 = ''
-        for x in range(11):
+        for _ in range(11):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_n_11 = seq_n_11 + str(sel_num)
-
         self.n_11.append(seq_n_11)
         return seq_n_11
 
@@ -392,7 +323,7 @@ class Person:
         df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
         sel_num = random.randint(0, df.shape[0] - 1)
         seq_cod_11 = df['UF'][sel_num].upper()
-        for x in range(9):
+        for _ in range(9):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_cod_11 = seq_cod_11 + str(sel_num)
