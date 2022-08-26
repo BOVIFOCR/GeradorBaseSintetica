@@ -1,0 +1,95 @@
+{
+    "header-nome": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "nome"
+    },
+    "header-obs": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "observação"
+    },
+    "header-datanasc": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "data nascimento"
+    },
+    "header-orgaoexp": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "orgão expedidor"
+    },
+    "header-rh": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "fator rh"
+    },
+    "header-naturalidade": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "naturalidade"
+    },
+    "header-filiacao": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "filiação"
+    },
+    "header-assin": {
+        "sensitive": false,
+        "is_header": true,
+        "is_entity": true,
+        "transcript": "assinatura do titular"
+    },
+    "nomeMae": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "naturalidade": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "serial?": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "nomePai": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "orgaoEmissor": {
+        "sensitive": false,
+        "is_header": false,
+        "is_entity": true
+    },
+    "cod-sec": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "dataNascimento": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "nome": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": true
+    },
+    "assin": {
+        "sensitive": true,
+        "is_header": false,
+        "is_entity": false
+    }
+}
