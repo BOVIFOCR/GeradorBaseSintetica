@@ -13,6 +13,7 @@ from find_face import erase_face
 import text_2_image
 
 import paths
+from paths import SamplePath
 
 from doc_ock.mp_lock import mp_lock
 
@@ -41,16 +42,15 @@ def load_annotations(labels_fpath, resize_scale=1.):
         json_arq = json.load(json_file)
     for idx in range(len(json_arq)):
         json_arq[idx]['region_shape_attributes']['all_points_x'] = list(map(
-            lambda c: int(c * resize_scale),
+            lambda c: c * resize_scale,
             json_arq[idx]['region_shape_attributes']['all_points_x']))
         json_arq[idx]['region_shape_attributes']['all_points_y'] = list(map(
-            lambda c: int(c * resize_scale),
+            lambda c: c * resize_scale,
             json_arq[idx]['region_shape_attributes']['all_points_y']))
     return json_arq
 
 
 def process_main(img_spath):
-    img_id = Path(img_spath).stem
     labels_fpath = img_spath.labels_fpath()
 
     try:
@@ -59,16 +59,19 @@ def process_main(img_spath):
 
         # Ajusta o DPI e orientação da imagem e salva o resultado em `paths.path_rot`
         print('Ajustando orientação e resolução da imagem')
+        print(img.shape)
         img, resize_scale = resize_image(img)
+        print(img.shape)
+        print(resize_scale)
 
         # Detecta e apaga a face
         print('Apagando face')
         img = erase_face(img)
 
         # Carrega e ajusta anotações
+        print('Ajustando anotações')
         json_arq = load_annotations(labels_fpath, resize_scale=resize_scale)
-
-        with open(labels_fpath, mode='w', encoding='utf-8') as json_fp:
+        with open(str(labels_fpath).replace('.json', '.bg.json'), mode='w', encoding='utf-8') as json_fp:
             json.dump(json_arq, json_fp)
 
         # Anonimiza os dados e salva o resultadao em `paths.path_back`
@@ -82,10 +85,11 @@ def process_main(img_spath):
 
 def main():
     input_list = list(paths.list_input_images(for_anon=True))
+    input_list = [SamplePath('synthesis_input/input/1bc288dc-718c-4c81-9365-48377215880f.jpg')]
+    print(f'Loaded {len(input_list)} for anonimization.')
 
-    # mp_lock(
-    #     input_list, process_main, save_callback=None, num_procs=4, out_path='mplock_out')
-    [process_main(img_spath) for img_spath in input_list]
+    mp_lock(
+        input_list, process_main, save_callback=None, num_procs=16, out_path='mplock_out')
 
 if __name__ == '__main__':
     main()
