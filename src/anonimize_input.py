@@ -60,14 +60,16 @@ def process_main(img_spath):
 
 
 def main():
+    env = dict(os.environ)
+
     input_list = list(paths.list_input_images(for_anon=True))
-    if os.environ.get("DEBUGGING"):
+    if env.get("DEBUGGING"):
         input_list = [
             paths.SamplePath("synthesis_input/input/1bc288dc-718c-4c81-9365-48377215880f.jpg")
         ]
     logging.info(f"Foram carregadas {len(input_list)} imagens para anonimização.")
 
-    if os.environ.get("SINGLE_THREAD"):
+    if env.get("SINGLE_THREAD"):
         logging.info("Iniciando processamento serial.")
         [process_main(img_spath) for img_spath in input_list]
     else:

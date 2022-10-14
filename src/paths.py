@@ -14,10 +14,7 @@ class SamplePath(Path):
 
 
 def list_input_images(for_anon=False):
-    # fnames = [SamplePath(p) for p in Path(path_entrada).iterdir()]
-    fnames = [
-        SamplePath("synthesis_input/input/1bc288dc-718c-4c81-9365-48377215880f.jpg")
-    ]
+    fnames = [SamplePath(p) for p in Path(path_entrada).iterdir()]
     random.shuffle(fnames)
     for input_fpath in fnames:
         file_id, file_ext = input_fpath.sample_id(return_ext=True)
