@@ -1,11 +1,10 @@
+import json
 import os
 from pathlib import Path
 
-import json
 import pandas as pd
 
 from src.paths import json_path
-
 
 df = pd.read_csv('via.csv')
 
@@ -28,7 +27,8 @@ for _, row in df.iterrows():
     tag = sample_attrs['tag']
     if entities[tag]['is_entity']:
         transcription = entities[tag].get('transcript', sample_attrs['transcription'])
-        points_str = ','.join(','.join(map(str, map(int, p))) for p in zip(shape_attrs["all_points_x"], shape_attrs["all_points_y"]))
+        points_str = ','.join(','.join(
+            map(str, map(int, p))) for p in zip(shape_attrs["all_points_x"], shape_attrs["all_points_y"]))
         with open(out_fpath, 'a') as fp:
             fp.write(f'{cur_ids[fname]},{points_str},{transcription},{tag}\n')
         cur_ids[fname] += 1

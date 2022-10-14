@@ -1,17 +1,15 @@
 # Arquivo que faz o data augmentation da imagem gerada.
-import itertools
-from PIL import Image, ImageEnhance
-import numpy as np
-import cv2 as cv
-import random
-import paths
 import os
+import random
 
-import text_2_image
+import cv2 as cv
+import numpy as np
 
+import paths
 
 # json_original = 'via_export_json.json'
-json_original = './new.json'
+json_original = "./new.json"
+
 
 def rotate_bound(img_name):
     outpath = (paths.path_saida / img_name).as_posix()
@@ -54,7 +52,7 @@ def motion_blur(img):
 
 
 def rand_rotation(img_name, path_img):
-    img = cv.imread(path_img + r'/' + img_name)
+    img = cv.imread(path_img + r"/" + img_name)
     random.seed()
     pos_angle = [0, 90, 180, 270]
     sel_num = random.randint(0, 3)
@@ -75,22 +73,3 @@ def rand_rotation(img_name, path_img):
 
     cv.imwrite(os.path.join(path_img, img_name), rotated)
     return angle
-
-
-def ctr_brg(img_name, file_idx, rep_idx, area_n_text, tipo_doc):
-    random.seed()
-    factor = round(random.uniform(0.5, 0.9), 2)
-    contrast(img_name, file_idx, rep_idx, factor, area_n_text)
-
-    random.seed()
-    factor = round(random.uniform(0.5, 0.9), 2)
-    brightness(img_name, file_idx, rep_idx, factor, area_n_text)
-
-    random.seed()
-    factor = 1 + round(random.uniform(0.1, 0.3), 2)
-    contrast(img_name, file_idx, rep_idx, factor, area_n_text)
-
-    if tipo_doc != 'RG':
-        random.seed()
-        factor = 1 + round(random.uniform(0.1, 0.3), 2)
-        brightness(img_name, file_idx, rep_idx, factor, area_n_text)

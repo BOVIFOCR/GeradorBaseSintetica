@@ -1,11 +1,10 @@
+import json
 import os
 from pathlib import Path
 
-import json
 import pandas as pd
 
 from paths import json_path
-
 
 df = pd.read_csv('via.csv')
 

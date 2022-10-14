@@ -1,21 +1,60 @@
-from datetime import datetime, timedelta
-import pandas as pd
 import random
+import string
+from datetime import datetime, timedelta
+
+import pandas as pd
 
 # DICIONÁRIO DE PALAVRAS
 
 # TODO: FIXO obs e tipo_h, cargo, aspa, doar e org.
-tipo_h = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'AB'}
+tipo_h = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "AB"}
 
-obs = {0: 'EXERCE ATIVIDADE REMUNERADA;', 1: 'A;', 2: 'B;', 3: 'C;', 4: 'D;', 5: 'E;', 6: 'F;', 7: 'G;', 8: 'H;',
-       9: 'I;', 10: 'J;', 11: 'K;', 12: 'L;', 13: 'M;', 14: 'N;', 15: 'O;', 16: 'P;', 17: 'Q;', 18: 'R;', 19: 'S;',
-       20: 'T;', 21: 'U;', 22: 'V;', 23: 'W;', 24: 'X;', 25: 'Y;', 26: 'Z;'}
+obs = {
+    0: "EXERCE ATIVIDADE REMUNERADA;",
+    1: "A;",
+    2: "B;",
+    3: "C;",
+    4: "D;",
+    5: "E;",
+    6: "F;",
+    7: "G;",
+    8: "H;",
+    9: "I;",
+    10: "J;",
+    11: "K;",
+    12: "L;",
+    13: "M;",
+    14: "N;",
+    15: "O;",
+    16: "P;",
+    17: "Q;",
+    18: "R;",
+    19: "S;",
+    20: "T;",
+    21: "U;",
+    22: "V;",
+    23: "W;",
+    24: "X;",
+    25: "Y;",
+    26: "Z;",
+}
 
-cargo = {0: 'DIRETOR', 1: 'COORDENADOR', 2: 'PRESIDENTE'}
+cargo = {0: "DIRETOR", 1: "COORDENADOR", 2: "PRESIDENTE"}
 
-aspa = {0: 'COM AVRB VIUVEZ', 1: 'COM AVRB DIVÓRCIO'}
+aspa = {0: "COM AVRB VIUVEZ", 1: "COM AVRB DIVÓRCIO"}
 
-org = {0: 'SDS', 1: 'SSP', 2: 'POM', 3: 'SNJ', 4: 'SPTC', 5: 'SESP', 6: 'SJS', 7: 'POF', 8: 'SES', 9: 'SEJ'}
+org = {
+    0: "SDS",
+    1: "SSP",
+    2: "POM",
+    3: "SNJ",
+    4: "SPTC",
+    5: "SESP",
+    6: "SJS",
+    7: "POF",
+    8: "SES",
+    9: "SEJ",
+}
 # ------------------------------------------------------------------------------------------------------------------
 
 
@@ -53,13 +92,13 @@ class Person:
         self.aspa = []
 
     def set_nome(self, qtd_chars):
-        file = open('./files/nome.txt', 'r', encoding="ISO-8859-1")
+        file = open("./files/nome.txt", "r", encoding="ISO-8859-1")
         names = file.readlines()
-        full_name = ''
+        full_name = ""
         for _ in range(3):
             random.seed()
             sel_num = random.randint(0, len(names) - 1)
-            full_name = full_name + names[sel_num].rstrip('\n') + ''
+            full_name = full_name + names[sel_num].rstrip("\n") + ""
         full_name = full_name[:-1]
         if len(full_name) > qtd_chars:
             full_name = full_name[:qtd_chars]
@@ -68,13 +107,13 @@ class Person:
 
     def set_cpf(self):
         def formata_cpf(n_cpf):
-            formatado = ''
+            formatado = ""
             for i in range(len(n_cpf)):
                 formatado = formatado + n_cpf[i]
                 if i in [2, 5]:
-                    formatado = formatado + '.'
+                    formatado = formatado + "."
                 elif i == 8:
-                    formatado = formatado + '-'
+                    formatado = formatado + "-"
             return formatado
 
         def dig_verificador(n_cpf):
@@ -84,11 +123,11 @@ class Person:
                 int_values.append(int(n_cpf[i]) * (peso - i))
             soma = sum(int_values)
             resto = soma % 11
-            dig = '0' if resto in [0, 1] else str(11 - resto)
+            dig = "0" if resto in [0, 1] else str(11 - resto)
             return dig
 
         def make_cpf():
-            seq_cpf = ''
+            seq_cpf = ""
             for _ in range(9):
                 random.seed()
                 sel_num = random.randint(0, 9)
@@ -106,13 +145,13 @@ class Person:
 
     def set_rg(self, tipo_doc):
         def formata_rg(n_rg):
-            rg_f = ''
+            rg_f = ""
             for i in range(len(n_rg)):
                 rg_f = rg_f + n_rg[i]
                 if i in [1, 4]:
-                    rg_f = rg_f + '.'
+                    rg_f = rg_f + "."
                 elif i == 7:
-                    rg_f = rg_f + '-'
+                    rg_f = rg_f + "-"
             return rg_f
 
         def verf_rg(n_rg):
@@ -130,14 +169,14 @@ class Person:
             return dig_v
 
         def make_rg():
-            seq_rg = ''
+            seq_rg = ""
             for _ in range(8):
                 random.seed()
                 sel_num = random.randint(0, 9)
                 seq_rg = seq_rg + str(sel_num)
             dig = verf_rg(seq_rg)
             seq_rg = seq_rg + dig
-            if tipo_doc == 'RG':
+            if tipo_doc == "RG":
                 seq_rg = formata_rg(seq_rg)
             return seq_rg
 
@@ -153,11 +192,11 @@ class Person:
                 int_values.append(int(espelho[x]) * (peso - x))
             soma = sum(int_values)
             resto = soma % 11
-            dig = '0' if resto in [0, 1] else str(11 - resto)
+            dig = "0" if resto in [0, 1] else str(11 - resto)
             return dig
 
         def make_n_9():
-            seq_n_9 = ''
+            seq_n_9 = ""
             for _ in range(8):
                 random.seed()
                 sel_num = random.randint(0, 9)
@@ -173,42 +212,42 @@ class Person:
         return r_n_9
 
     def set_folha(self):
-        c_nasc = 'C.NAS='
-        livro = 'LV='
+        c_nasc = "C.NAS="
+        livro = "LV="
         lista = random.sample(range(1, 500), 3)
-        c_nasc = c_nasc + str(lista[0]) + ' '
-        livro = livro + str(lista[1]) + ' '
-        a_folha = 'FL=' + str(lista[2])
+        c_nasc = c_nasc + str(lista[0]) + " "
+        livro = livro + str(lista[1]) + " "
+        a_folha = "FL=" + str(lista[2])
         final = c_nasc + livro + a_folha
         self.folha.append(final)
         return final
 
     def set_pis(self, qtd_chars):
-        pis_pasep = ''
+        pis_pasep = ""
         for x in range(9):
             random.seed()
             sel_num = random.randint(0, 9)
             pis_pasep = pis_pasep + str(sel_num)
             if x == 4:
-                pis_pasep = pis_pasep + '/'
+                pis_pasep = pis_pasep + "/"
         if len(pis_pasep) > qtd_chars:
             pis_pasep = pis_pasep[:qtd_chars]
         self.pis.append(pis_pasep)
         return pis_pasep
 
     def set_n_5(self):
-        seq_n_5 = ''
+        seq_n_5 = ""
         for x in range(5):
             random.seed()
             sel_num = random.randint(0, 9)
             seq_n_5 = seq_n_5 + str(sel_num)
             if x == 3:
-                seq_n_5 = seq_n_5 + '-'
+                seq_n_5 = seq_n_5 + "-"
         self.n_5.append(seq_n_5)
         return seq_n_5
 
     def set_n_6(self):
-        seq_n_6 = ''
+        seq_n_6 = ""
         for _ in range(5):
             random.seed()
             sel_num = random.randint(0, 9)
@@ -217,7 +256,7 @@ class Person:
         return seq_n_6
 
     def set_cod_4(self):
-        seq_n_nh = 'NH '
+        seq_n_nh = "NH "
         for _ in range(2):
             random.seed()
             sel_num = random.randint(0, 9)
@@ -226,7 +265,7 @@ class Person:
         return seq_n_nh
 
     def set_cod_8(self):
-        seq_cod_8 = ''
+        seq_cod_8 = ""
         for _ in range(7):
             random.seed()
             sel_num = random.randint(0, 9)
@@ -235,7 +274,7 @@ class Person:
         return seq_cod_8
 
     def set_cod_10(self):
-        alfabeto = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        alfabeto = string.ascii_uppercase
 
         random.seed()
         sel_letra = random.randint(0, len(alfabeto) - 1)
@@ -245,63 +284,67 @@ class Person:
             sel_num = random.randint(0, 9)
             seq_cod_10 = seq_cod_10 + str(sel_num)
             if x == 2:
-                seq_cod_10 = seq_cod_10 + '-'
+                seq_cod_10 = seq_cod_10 + "-"
         self.cod_10.append(seq_cod_10)
         return seq_cod_10
 
     def set_est(self):
         random.seed()
-        df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
+        df = pd.read_csv(r"./files/cid_est.csv", encoding="utf-8")
         sel_num = random.randint(0, df.shape[0] - 1)
 
-        sel_est = df['UF'][sel_num].upper()
+        sel_est = df["UF"][sel_num].upper()
         self.est.append(sel_est)
         return sel_est
 
     def set_cid(self, qtd_chars):
-        df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
-        df_filter = (df.loc[df['Município'].apply(lambda x: len(x) < qtd_chars)]).dropna(how='all')
+        df = pd.read_csv(r"./files/cid_est.csv", encoding="utf-8")
+        df_filter = (
+            df.loc[df["Município"].apply(lambda x: len(x) < qtd_chars)]
+        ).dropna(how="all")
 
         if df_filter.shape[0] > 0:
             random.seed()
             sel_num = random.randint(0, df_filter.shape[0] - 1)
-            sel_cid = df_filter['Município'].values[sel_num].upper()
+            sel_cid = df_filter["Município"].values[sel_num].upper()
         else:
-            sel_cid = 'ITU'
+            sel_cid = "ITU"
 
         self.cid.append(sel_cid)
         return sel_cid
 
     def set_cid_est(self, qtd_chars):
-        df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
-        df_filter = (df.loc[df['Município'].apply(lambda x: len(x) < qtd_chars-4)]).dropna(how='all')
+        df = pd.read_csv(r"./files/cid_est.csv", encoding="utf-8")
+        df_filter = (
+            df.loc[df["Município"].apply(lambda x: len(x) < qtd_chars - 4)]
+        ).dropna(how="all")
 
         if df_filter.shape[0] > 0:
             random.seed()
-            sel_num = random.randint(0, df_filter.shape[0]-1)
-            sel_est = df_filter['UF'].values[sel_num].upper()
-            sel_cid = df_filter['Município'].values[sel_num].upper()
-            sel_local = sel_cid + '-' + sel_est
+            sel_num = random.randint(0, df_filter.shape[0] - 1)
+            sel_est = df_filter["UF"].values[sel_num].upper()
+            sel_cid = df_filter["Município"].values[sel_num].upper()
+            sel_local = sel_cid + "-" + sel_est
         else:
-            sel_local = 'ITU-SP'
+            sel_local = "ITU-SP"
 
         self.local.append(sel_local)
         return sel_local
 
     # TODO: Checar get_cid
     def set_d_orig(self):
-        df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
+        df = pd.read_csv(r"./files/cid_est.csv", encoding="utf-8")
         random.seed()
         sel_num = random.randint(0, len(df) - 1)
-        sel_cid = df['Município'][sel_num].upper()
-        sel_est = df['UF'].values[sel_num].upper()
+        sel_cid = df["Município"][sel_num].upper()
+        sel_est = df["UF"].values[sel_num].upper()
 
-        doc = 'CMC= ' + sel_cid + '-' + sel_est + ' ,SEDE'
+        doc = "CMC= " + sel_cid + "-" + sel_est + " ,SEDE"
         self.d_orig.append(doc)
         return doc
 
     def set_n_reg(self):
-        seq_n_reg = ''
+        seq_n_reg = ""
         for _ in range(11):
             random.seed()
             sel_num = random.randint(0, 9)
@@ -310,7 +353,7 @@ class Person:
         return seq_n_reg
 
     def set_n_11(self):
-        seq_n_11 = ''
+        seq_n_11 = ""
         for _ in range(11):
             random.seed()
             sel_num = random.randint(0, 9)
@@ -320,9 +363,9 @@ class Person:
 
     def set_cod_11(self):
         random.seed()
-        df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
+        df = pd.read_csv(r"./files/cid_est.csv", encoding="utf-8")
         sel_num = random.randint(0, df.shape[0] - 1)
-        seq_cod_11 = df['UF'][sel_num].upper()
+        seq_cod_11 = df["UF"][sel_num].upper()
         for _ in range(9):
             random.seed()
             sel_num = random.randint(0, 9)
@@ -339,33 +382,33 @@ class Person:
             date_f = start + (end - start) * random.random()
             return str(date_f)
 
-        full_data = gen_datetime().split(' ')
-        full_data = full_data[0].split('-')
-        date = full_data[2] + '/' + full_data[1] + '/' + full_data[0]
+        full_data = gen_datetime().split(" ")
+        full_data = full_data[0].split("-")
+        date = full_data[2] + "/" + full_data[1] + "/" + full_data[0]
 
         self.data.append(date)
         return date
 
     def set_org(self):
         random.seed()
-        sel_num = random.randint(0, len(org)-1)
+        sel_num = random.randint(0, len(org) - 1)
         text = org[sel_num]
         self.org.append(text)
         return text
 
     def set_rg_org_est(self):
         random.seed()
-        sel_num = random.randint(0, len(org)-1)
+        sel_num = random.randint(0, len(org) - 1)
         org_p = org[sel_num]
 
         random.seed()
-        df = pd.read_csv(r'./files/cid_est.csv', encoding='utf-8')
+        df = pd.read_csv(r"./files/cid_est.csv", encoding="utf-8")
         sel_num_est = random.randint(0, len(df) - 1)
-        est_p = df['UF'][sel_num_est].upper()
+        est_p = df["UF"][sel_num_est].upper()
 
-        rg_p = self.set_rg(tipo_doc='CNH')
+        rg_p = self.set_rg(tipo_doc="CNH")
 
-        final = rg_p + ' ' + org_p + ' ' + est_p
+        final = rg_p + " " + org_p + " " + est_p
 
         self.rg_org_est.append(final)
         return final
@@ -373,35 +416,35 @@ class Person:
     def set_via(self):
         random.seed()
         sel_num = random.randint(1, 9)
-        via_p = str(sel_num) + ' VIA'
+        via_p = str(sel_num) + " VIA"
         self.via.append(via_p)
         return via_p
 
     def set_n_via(self):
         random.seed()
         sel_num = random.randint(1, 9)
-        num_via = '0' + str(sel_num)
+        num_via = "0" + str(sel_num)
         self.n_via.append(num_via)
         return num_via
 
     def set_obs(self):
-        text = ''
+        text = ""
         random.seed()
-        sel_num = random.randint(0, len(obs)-1)
+        sel_num = random.randint(0, len(obs) - 1)
         text = obs[sel_num]
         self.obs.append(text)
         return text
 
     def set_cargo(self):
         random.seed()
-        sel_num = random.randint(0, len(cargo)-1)
+        sel_num = random.randint(0, len(cargo) - 1)
         text = cargo[sel_num]
         self.cargo.append(text)
         return text
 
     def set_tipo_h(self):
         random.seed()
-        sel_num = random.randint(0, len(tipo_h)-1)
+        sel_num = random.randint(0, len(tipo_h) - 1)
         text = tipo_h[sel_num]
         self.tipo_h.append(text)
         return text
