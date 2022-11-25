@@ -4,6 +4,11 @@ from colorthief import ColorThief
 import numpy as np
 import cv2 as cv
 import os
+from PIL import Image
+import torch
+from torchvision.utils import save_image
+from torchvision import transforms
+from gan_model.utils import poisson_blend
 
 import paths
 path_base = '' #paths.path
@@ -35,7 +40,7 @@ def correct_polyline_spaces(area, img, dom_color, tipo_doc):
             correct_color(green, area[x], green_dom, tipo_doc)
             correct_color(red, area[x], red_dom, tipo_doc)
 
-    return cv.merge((blue, green, red))
+    return cv.merge((red,green,blue))
 
 
 # Garante que os intervalos fiquem  do range da imagem.
@@ -110,6 +115,25 @@ def erase_text(img, area, dom_color, tipo_doc):
 
     return cv.merge((blue, green, red))
 
+def gen_mask(area, shape):
+    mask = torch.zeros(1, 1, shape[0], shape[1])
+    for reg in area:
+        mask[:,:, reg[0],reg[1]] = 1.0
+
+    return mask
+
+def erase_text_gan(img, area, model, mpv):
+    mask = gen_mask(area, img.shape)
+    x = transforms.ToTensor()(img)
+    x = torch.unsqueeze(x, 0)
+    x_mask = x - x * mask + mpv * mask
+   
+    input = torch.cat((x_mask, mask), dim=1)
+    output = model(input)
+    inpainted = poisson_blend(x_mask, output, mask)
+    
+    ret = inpainted.squeeze()
+    return ret
 
 # O elemento em mat[row][col] deve rodar com mat[col][10 - row - 1], mat[10 - row - 1][10 - col - 1],
 # e mat[10 - col - 1][row].
@@ -186,8 +210,13 @@ def rotate_poly(shape_x, shape_y, point_x, point_y, angle):
 
 
 # Gera as imagens do background.
-def back_gen(img_name, arq, tipo_doc, angle):
-    img_2_read = cv.imread(path_rot + r'/' + img_name)
+def back_gen(img_name, arq, tipo_doc, angle, gan=None, mpv=None):
+    if gan is None:
+        img_2_read = cv.imread(path_rot + r'/' + img_name)
+        img_2_read = cv.cvtColor(img_2_read, cv.COLOR_BGR2RGB)
+    else:
+        img_2_read = np.array(Image.open(path_rot + r'/' + img_name))
+
     crop_name = 'crop.jpg'
 
     shape_y = img_2_read.shape[0]
@@ -196,78 +225,128 @@ def back_gen(img_name, arq, tipo_doc, angle):
     # conj_img = [v for k, v in arq.items() if k.startswith(img_name)]
     regions = arq
 
+    cv.imwrite(os.path.join(path_back, 'x' + img_name), img_2_read)
+
     if regions is not None:
         # search = conj_img[0]
         # regions = search['regions']
         qtd_regions = len(regions)
         aux = 0
+        if gan is not None:
+            regs = []
+            for aux in range(qtd_regions):
+                if regions[aux]['region_attributes']['info_type'] == 'p':
+                    if regions[aux]['region_shape_attributes']['name'] == 'rect':
+                        rect_x = regions[aux]['region_shape_attributes']['x']
+                        rect_x_final = rect_x + regions[aux]['region_shape_attributes']['width']
+                        rect_y = regions[aux]['region_shape_attributes']['y']
+                        rect_y_final = rect_y + regions[aux]['region_shape_attributes']['height']
 
-        while aux < qtd_regions:
-            if regions[aux]['region_attributes']['info_type'] == 'p':
-                if regions[aux]['region_shape_attributes']['name'] == 'rect':
-                    rect_x = regions[aux]['region_shape_attributes']['x']
-                    rect_x_final = rect_x + regions[aux]['region_shape_attributes']['width']
-                    rect_y = regions[aux]['region_shape_attributes']['y']
-                    rect_y_final = rect_y + regions[aux]['region_shape_attributes']['height']
+                        rect_x, rect_y, rect_x_final, rect_y_final = rotate_points(shape_x, shape_y, rect_x, rect_y,
+                                                                                rect_x_final, rect_y_final, angle)
 
-                    rect_x, rect_y, rect_x_final, rect_y_final = rotate_points(shape_x, shape_y, rect_x, rect_y,
-                                                                               rect_x_final, rect_y_final, angle)
+                        regs += create_rect_area(rect_x, rect_y, rect_x_final, rect_y_final)
+                    else:
+                        all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
+                        all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
+                        qtd_points = len(all_points_x)
+                        points = []
 
-                    area_text = create_rect_area(rect_x, rect_y, rect_x_final, rect_y_final)
+                        for i in range(qtd_points):
+                            points.append(rotate_poly(shape_x, shape_y, all_points_x[i], all_points_y[i], angle))
+                        pts = np.asarray(points)
+                        pts = pts.reshape((-1, 1, 2))
+                        # cv.polylines(img_2_read, pts, isClosed=True, color=(0, 0, 0))
+                        # cv.fillPoly(img_2_read, [pts], (0, 0, 0))
+
+                        pixel_correction = 3
+
+                        min_x = min(all_points_x)
+                        min_y = min(all_points_y)
+                        max_y = max(all_points_y)
+                        max_x = max(all_points_x)
+
+                        min_x, min_y, max_x, max_y = rotate_points(shape_x, shape_y, min_x, min_y, max_x, max_y, angle)
+
+                        correct_values = fill_black_area(min_x, min_y, max_x, max_y, pixel_correction, shape_x, shape_y)
+                        min_x = correct_values[0]
+                        min_y = correct_values[1]
+                        max_x = correct_values[2]
+                        max_y = correct_values[3]
+
+                        regs += create_rect_area(min_x, min_y, max_x, max_y)
+            img_2_read = erase_text_gan(img_2_read, regs, gan, mpv)
+
+            save_image(img_2_read, os.path.join(path_back, img_name))
+
+        else: 
+            while aux < qtd_regions:
+                if regions[aux]['region_attributes']['info_type'] == 'p':
+                    if regions[aux]['region_shape_attributes']['name'] == 'rect':
+                        rect_x = regions[aux]['region_shape_attributes']['x']
+                        rect_x_final = rect_x + regions[aux]['region_shape_attributes']['width']
+                        rect_y = regions[aux]['region_shape_attributes']['y']
+                        rect_y_final = rect_y + regions[aux]['region_shape_attributes']['height']
+
+                        rect_x, rect_y, rect_x_final, rect_y_final = rotate_points(shape_x, shape_y, rect_x, rect_y,
+                                                                                rect_x_final, rect_y_final, angle)
+
+                        area_text = create_rect_area(rect_x, rect_y, rect_x_final, rect_y_final)
 
 
-                    crop_img = img_2_read[rect_y:rect_y_final, rect_x:rect_x_final]
-                    cv.imwrite(os.path.join(path_crop, crop_name), crop_img)
+                        crop_img = img_2_read[rect_y:rect_y_final, rect_x:rect_x_final]
+                        cv.imwrite(os.path.join(path_crop, crop_name), crop_img)
 
-                    color_thief = ColorThief(path_crop + r'/' + crop_name)
-                    palette = color_thief.get_palette(color_count=2)
-                    dominant_color = palette[0]
+                        color_thief = ColorThief(path_crop + r'/' + crop_name)
+                        palette = color_thief.get_palette(color_count=2)
+                        dominant_color = palette[0]
 
-                    os.remove(path_crop + r'/' + crop_name)
+                        os.remove(path_crop + r'/' + crop_name)
 
-                    img_2_read = erase_text(img_2_read, area_text, dominant_color, tipo_doc)
+                        img_2_read = erase_text(img_2_read, area_text, dominant_color, tipo_doc)
 
-                else:
-                    all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
-                    all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
-                    qtd_points = len(all_points_x)
-                    points = []
+                    else:
+                        all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
+                        all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
+                        qtd_points = len(all_points_x)
+                        points = []
 
-                    for i in range(qtd_points):
-                        points.append(rotate_poly(shape_x, shape_y, all_points_x[i], all_points_y[i], angle))
-                    pts = np.asarray(points)
-                    pts = pts.reshape((-1, 1, 2))
-                    cv.polylines(img_2_read, pts, isClosed=True, color=(0, 0, 0))
-                    cv.fillPoly(img_2_read, [pts], (0, 0, 0))
+                        for i in range(qtd_points):
+                            points.append(rotate_poly(shape_x, shape_y, all_points_x[i], all_points_y[i], angle))
+                        pts = np.asarray(points)
+                        pts = pts.reshape((-1, 1, 2))
+                        cv.polylines(img_2_read, pts, isClosed=True, color=(0, 0, 0))
+                        cv.fillPoly(img_2_read, [pts], (0, 0, 0))
 
-                    pixel_correction = 3
+                        pixel_correction = 3
 
-                    min_x = min(all_points_x)
-                    min_y = min(all_points_y)
-                    max_y = max(all_points_y)
-                    max_x = max(all_points_x)
+                        min_x = min(all_points_x)
+                        min_y = min(all_points_y)
+                        max_y = max(all_points_y)
+                        max_x = max(all_points_x)
 
-                    min_x, min_y, max_x, max_y = rotate_points(shape_x, shape_y, min_x, min_y, max_x, max_y, angle)
+                        min_x, min_y, max_x, max_y = rotate_points(shape_x, shape_y, min_x, min_y, max_x, max_y, angle)
 
-                    correct_values = fill_black_area(min_x, min_y, max_x, max_y, pixel_correction, shape_x, shape_y)
-                    min_x = correct_values[0]
-                    min_y = correct_values[1]
-                    max_x = correct_values[2]
-                    max_y = correct_values[3]
+                        correct_values = fill_black_area(min_x, min_y, max_x, max_y, pixel_correction, shape_x, shape_y)
+                        min_x = correct_values[0]
+                        min_y = correct_values[1]
+                        max_x = correct_values[2]
+                        max_y = correct_values[3]
 
-                    area_poly = create_rect_area(min_x, min_y, max_x, max_y)
+                        area_poly = create_rect_area(min_x, min_y, max_x, max_y)
 
-                    crop_img = img_2_read[min_y:max_y, min_x:max_x]
-                    cv.imwrite(os.path.join(path_crop, crop_name), crop_img)
+                        crop_img = img_2_read[min_y:max_y, min_x:max_x]
+                        cv.imwrite(os.path.join(path_crop, crop_name), crop_img)
 
-                    color_thief = ColorThief(path_crop + r'/' + crop_name)
-                    palette = color_thief.get_palette(color_count=2)
-                    dominant_color = palette[0]
+                        color_thief = ColorThief(path_crop + r'/' + crop_name)
+                        palette = color_thief.get_palette(color_count=2)
+                        dominant_color = palette[0]
 
-                    os.remove(path_crop + r'/' + crop_name)
+                        os.remove(path_crop + r'/' + crop_name)
 
-                    img_2_read = correct_polyline_spaces(area_poly, img_2_read, dominant_color, tipo_doc)
+                        img_2_read = correct_polyline_spaces(area_poly, img_2_read, dominant_color, tipo_doc)
 
-            aux = aux + 1
+                aux = aux + 1
+                cv.imwrite(os.path.join(path_back, img_name), img_2_read)
         os.remove(path_rot + r'/' + img_name)
-        cv.imwrite(os.path.join(path_back, img_name), img_2_read)
+    
