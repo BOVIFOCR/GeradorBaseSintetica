@@ -118,7 +118,8 @@ def erase_text(img, area, dom_color, tipo_doc):
 def gen_mask(area, shape):
     mask = torch.zeros(1, 1, shape[0], shape[1])
     for reg in area:
-        mask[:,:, reg[0],reg[1]] = 1.0
+        pt = tuple(map(int, reg))
+        mask[:,:, pt[0], pt[1]] = 1.0
 
     return mask
 
