@@ -23,6 +23,9 @@ prep_labels:
 anonimize: src/anonimize_input.py
 	.venv/bin/python -u src/anonimize_input.py
 
+debug_anonimize:
+	.venv/bin/python -u -m pdb src/anonimize_input.py
+
 clean_anonimize:
 	rm -rf synthesis_output/back
 
