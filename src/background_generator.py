@@ -1,6 +1,7 @@
 import math
 
 import cv2 as cv
+import doxapy as doxa
 import numpy as np
 
 from logging_cfg import logging
@@ -206,7 +207,16 @@ def back_gen(img, img_spath, arq, angle):
     # computes inpaint mask
     inpaint_mask = np.zeros((img.shape[0], img.shape[1], 1), like=img, dtype=np.uint8)
     for rect_x, rect_y, rect_x_final, rect_y_final in rects:
-        inpaint_mask[rect_y:rect_y_final, rect_x:rect_x_final] = 255
+        roi = img[rect_y:rect_y_final, rect_x:rect_x_final]
+        roi_bin = cv.cvtColor(roi, cv.COLOR_RGB2GRAY)
+        doxa.Binarization.update_to_binary(doxa.Binarization.Algorithms.NICK, roi_bin)
+        roi_bin = cv.bitwise_not(roi_bin)
+
+        roi = np.array(roi_bin, dtype=np.uint8)
+        roi = cv.blur(roi, (7, 3))
+        roi = np.atleast_3d(roi)
+
+        inpaint_mask[rect_y:rect_y_final, rect_x:rect_x_final] = roi
 
     # defines erasing functions
     def inpaint(img_arg):
@@ -219,6 +229,7 @@ def back_gen(img, img_spath, arq, angle):
         return img_arg
 
     def sweep_erase(img_arg):
+        # TODO: try areas on character segmentation rather than full bbox
         for rect_x, rect_y, rect_x_final, rect_y_final in rects:
             width = rect_x_final - rect_x
             min_area_x = 20
