@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: latin-1 -*-
+
 # Arquivo que apaga as informações pessoais das imagens.
 
 from colorthief import ColorThief
@@ -128,11 +131,11 @@ def erase_text_gan(img, area, model, mpv):
     x = transforms.ToTensor()(img)
     x = torch.unsqueeze(x, 0)
     x_mask = x - x * mask + mpv * mask
-   
+
     input = torch.cat((x_mask, mask), dim=1)
     output = model(input)
     inpainted = poisson_blend(x_mask, output, mask)
-    
+
     ret = inpainted.squeeze()
     return ret
 
@@ -280,7 +283,7 @@ def back_gen(img_name, arq, tipo_doc, angle, gan=None, mpv=None):
 
             save_image(img_2_read, os.path.join(path_back, img_name))
 
-        else: 
+        else:
             while aux < qtd_regions:
                 if regions[aux]['region_attributes']['info_type'] == 'p':
                     if regions[aux]['region_shape_attributes']['name'] == 'rect':
@@ -350,4 +353,3 @@ def back_gen(img_name, arq, tipo_doc, angle, gan=None, mpv=None):
                 aux = aux + 1
                 cv.imwrite(os.path.join(path_back, img_name), img_2_read)
         os.remove(path_rot + r'/' + img_name)
-    

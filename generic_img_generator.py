@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: latin-1 -*-
+
 # Arquivo main do projeto.
 import cv2 as cv
 import json
@@ -36,7 +39,7 @@ def main():
     if use_gan == True:
         gan = CompletionNetwork()
         gan.load_state_dict(torch.load(saved_model, map_location='cpu'))
-        
+
         with open(gan_config, 'r') as f:
             config = json.load(f)
         mpv = torch.tensor(config['mpv']).view(3, 1, 1)
