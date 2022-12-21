@@ -1,0 +1,4 @@
+[submodule "lib/multiprocessing_lib"]
+	path = lib/multiprocessing_lib
+	url = https://github.com/josepsmartinez/multiprocessing_lib
+	branch = kwargs+lint
