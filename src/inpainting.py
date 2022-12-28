@@ -227,14 +227,17 @@ def inpaint_telea(img, inpaint_mask, inpaintRadius=3):
 
 ## GAN
 def inpaint_gan(img, mask, model, mpv):
-    x = torch.unsqueeze(transforms.ToTensor()(img), 0)
+    img = torch.unsqueeze(transforms.ToTensor()(img), 0)
     mask = torch.unsqueeze(transforms.ToTensor()(mask), 0)
-    x_mask = x - x * mask + mpv * mask
+    img.sub_(img * mask)
+    img.add_(mpv * mask)
 
-    input = torch.cat((x_mask, mask), dim=1)
-    output = model(input)
-    inpainted = poisson_blend(x_mask, output, mask)
+    with torch.no_grad():
+        output = model(torch.cat((img, mask), dim=1))
+    inpainted = poisson_blend(img, output, mask)
 
-    ret = inpainted.squeeze()
-    ret = ret.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to("cpu", torch.uint8).numpy()
-    return ret
+    inpainted = inpainted.squeeze()  # not an inplace op
+    inpainted.mul_(255).add_(0.5).clamp_(0, 255)
+
+    # return inpainted.permute(1, 2, 0).to("cpu", torch.uint8).numpy()
+    return inpainted.permute(1, 2, 0).numpy()

@@ -201,9 +201,9 @@ def poisson_blend(input, output, mask, infer_center=True):
     * returns:
                 Output image tensor of shape (N, 3, H, W) inpainted with poisson image editing method.
     """
-    input = input.clone().cpu()
-    output = output.clone().cpu()
-    mask = mask.clone().cpu()
+    input = input.cpu()
+    output = output.cpu()
+    mask = mask.cpu()
     mask = torch.cat((mask, mask, mask), dim=1)  # convert to 3-channel format
     num_samples = input.shape[0]
     ret = []
