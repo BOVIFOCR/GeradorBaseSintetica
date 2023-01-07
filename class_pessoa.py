@@ -16,7 +16,51 @@ cargo = {0: 'DIRETOR', 1: 'COORDENADOR', 2: 'PRESIDENTE'}
 aspa = {0: 'COM AVRB VIUVEZ', 1: 'COM AVRB DIVÓRCIO'}
 
 org = {0: 'SDS', 1: 'SSP', 2: 'POM', 3: 'SNJ', 4: 'SPTC', 5: 'SESP', 6: 'SJS', 7: 'POF', 8: 'SES', 9: 'SEJ'}
+
+ufs = {0: 'RO', 1: 'AC', 2: 'AM', 3: 'RR', 4: 'PA', 5: 'AP', 6: 'TO', 7: 'MA', 8: 'PI', 9: 'CE', 10: 'RN',
+      11: 'PB', 12: 'PE', 13: 'AL', 14: 'SE', 15: 'BA', 16: 'MG', 17: 'ES', 18: 'RJ', 19: 'SP', 20: 'PR',
+      21: 'SC', 22: 'RS', 23: 'MS', 24: 'MT', 25: 'GO', 26: 'DF'}
+
 # ------------------------------------------------------------------------------------------------------------------
+
+def rand_digits(n_digits):
+    ret = ""
+    for i in range(n_digits):
+        random.seed()
+        ret += str(random.randint(0,9))
+    return ret
+
+def formata_cpf(n_cpf):
+    formatado = ''
+    for i in range(len(n_cpf)):
+        formatado = formatado + n_cpf[i]
+
+        if i == 2 or i == 5:
+            formatado = formatado + '.'
+        elif i == 8:
+            formatado = formatado + '-'
+
+    return formatado
+
+def dig_verificador(n_cpf):
+    int_values = []
+
+    if len(n_cpf) == 9:
+        peso = 10
+    else:
+        peso = 11
+
+    for i in range(len(n_cpf)):
+        int_values.append(int(n_cpf[i]) * (peso - i))
+
+    soma = sum(int_values)
+    resto = soma % 11
+
+    if resto == 0 or resto == 1:
+        dig = '0'
+    else:
+        dig = str(11 - resto)
+    return dig
 
 
 class Person:
@@ -51,6 +95,12 @@ class Person:
         self.obs = []
         self.cargo = []
         self.aspa = []
+        self.tit_eleitor = []
+        self.ident_prof = []
+        self.militar = []
+        self.cns = []
+        self.uf = []
+        self.dni = []
 
     def set_nome(self, qtd_chars):
         file = open(r'./files/nome.txt', 'r', encoding = "ISO-8859-1")
@@ -83,37 +133,6 @@ class Person:
         return sobrenome
 
     def set_cpf(self):
-        def formata_cpf(n_cpf):
-            formatado = ''
-            for i in range(len(n_cpf)):
-                formatado = formatado + n_cpf[i]
-
-                if i == 2 or i == 5:
-                    formatado = formatado + '.'
-                elif i == 8:
-                    formatado = formatado + '-'
-
-            return formatado
-
-        def dig_verificador(n_cpf):
-            int_values = []
-
-            if len(n_cpf) == 9:
-                peso = 10
-            else:
-                peso = 11
-
-            for i in range(len(n_cpf)):
-                int_values.append(int(n_cpf[i]) * (peso - i))
-
-            soma = sum(int_values)
-            resto = soma % 11
-
-            if resto == 0 or resto == 1:
-                dig = '0'
-            else:
-                dig = str(11 - resto)
-            return dig
 
         def make_cpf():
             seq_cpf = ''
@@ -620,4 +639,92 @@ class Person:
     def get_n_6(self):
         topo = self.n_6.pop(0)
         self.n_6.append(topo)
+        return topo
+
+    def set_tit_eleitor(self):        
+        tit_eleitor = rand_digits(12)
+
+        if random.random() < 0.75:
+            tit_eleitor[0] = '0'
+        
+        if random.random() < 0.1:
+            tit_eleitor = tit_eleitor[0:6] + '.' + tit_eleitor[6:11]
+            tit_eleitor += '/0' + rand_digits(2) + '/0' +  rand_digits(3)
+
+        self.tit_eleitor.append(tit_eleitor)
+        return tit_eleitor
+
+    def get_tit_eleitor(self):
+        topo = self.tit_eleitor.pop(0)
+        self.tit_eleitor.append(topo)
+        return topo
+
+    def set_ident_prof(self):
+        ident_prof = rand_digits(6)
+
+        if random.random() < 0.5:
+            ident_prof = '0' + ident_prof[1] + '.' + ident_prof[2:5] + '.' + rand_digits(3)
+        elif random.random() < 0.15:
+            ident_prof += rand_digits(5)
+        elif random.random() < 0.15:
+            ident_prof = '0' + ident_prof
+
+        self.ident_prof.append(ident_prof)
+        return ident_prof
+
+    def get_ident_prof(self):
+        topo = self.ident_prof.pop(0)
+        self.ident_prof.append(topo)
+        return topo
+
+    def set_militar(self):
+        militar = rand_digits(10)
+ 
+        if random < 0.6:
+            militar = '0' + militar
+        if random < 0.5:
+            militar += rand_digits(1)
+        if random < 0.5:
+            militar += rand_digits(1)
+
+        self.militar.append(militar)
+        return militar
+
+    def get_militar(self):
+        topo = self.militar.pop(0)
+        self.militar.append(topo)
+        return topo
+
+    def set_cns(self):
+        cns = rand_digits(15)
+        self.cns.append(cns)
+        return cns
+
+    def get_cns(self):
+        topo = self.cns.pop(0)
+        self.cns.append(topo)
+        return topo
+
+    def set_uf(self):
+        uf = ufs[random.randint(0, 26)]
+        self.uf.append(uf)
+        return uf
+
+    def get_uf(self):
+        topo = self.uf.pop(0)
+        self.uf.append(topo)
+        return topo
+
+    def set_dni(self):
+        dni = rand_digits(9)
+        dni += dig_verificador(dni)
+        dni += dig_verificador(dni)
+        dni = formata_cpf(dni)
+
+        self.dni.append(dni)
+        return dni
+
+    def get_dni(self):
+        topo = self.dni.pop(0)
+        self.dni.append(topo)
         return topo

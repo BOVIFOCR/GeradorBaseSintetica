@@ -107,6 +107,18 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
         text = pessoa.set_n_via()
     elif tipo_texto == 'n_6':
         text = pessoa.set_n_6()
+    elif tipo_texto == 'te':
+        text = pessoa.set_tit_eleitor()
+    elif tipo_texto == 'profissional':
+        text = pessoa.set_ident_prof()
+    elif tipo_texto == 'militar':
+        text = pessoa.set_militar()
+    elif tipo_texto == 'cns':
+        text = pessoa.set_cns()
+    elif tipo_texto == 'uf':
+        text = pessoa.set_uf()
+    elif tipo_texto == 'dni':
+        text = pessoa.set_dni()
     elif tipo_texto == 'per':
         text = 'PERMISSÃO'
     elif tipo_texto == 'rga':
@@ -468,6 +480,18 @@ def get_pessoa_text(pessoa, tipo_texto):
         text = pessoa.get_n_via()
     elif tipo_texto == 'n_6':
         text = pessoa.get_n_6()
+    elif tipo_texto == 'te':
+        text = pessoa.get_tit_eleitor()
+    elif tipo_texto == 'profissional':
+        text = pessoa.get_ident_prof()
+    elif tipo_texto == 'militar':
+        text = pessoa.get_militar()
+    elif tipo_texto == 'cns':
+        text = pessoa.get_cns()
+    elif tipo_texto == 'uf':
+        text = pessoa.get_uf()
+    elif tipo_texto == 'dni':
+        text = pessoa.get_dni()
     elif tipo_texto == 'per':
         text = 'PERMISSÃO'
     elif tipo_texto == 'rga':
