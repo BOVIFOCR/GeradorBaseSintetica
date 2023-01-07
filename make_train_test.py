@@ -7,6 +7,13 @@ import random
 if sys.argv[1] not in ['cross', 'std']:
     print("Mode must be cross or std.")
     exit(-1)
+
+protocol = "standard"
+if len(sys.argv) == 4:
+    if sys.argv[3] not in ['inst50', 'inst25', 'dup50', 'dup25']:
+        print("Invalid protocol.")
+        exit(-1)
+    protocol = sys.argv[3]
     
 mode = sys.argv[1]
 fdir = sys.argv[2]
@@ -28,7 +35,17 @@ if mode == 'cross':
 #    train_idx = idxs[:int(ratio*len(idxs))]
 #    valid_idx = idxs[int(ratio*len(idxs)):int((ratio + ((1 - ratio)/2))*len(idxs))]
 #    test_idx = idxs[int((ratio + ((1 - ratio)/2))*len(idxs)):]
-    
+    if protocol.startswith("inst"):
+        if protocol.endswith("50"):
+            train_idx = train_idx[:len(train_idx)//2]
+        else:
+            train_idx = train_idx[:len(train_idx)//4]
+    elif protocol.startswith("dup"):
+        for inst in train_idx:
+            if protocol.endswith("50"):
+                fs[inst] = fs[inst][:len(fs[inst])//2]
+            else:
+                fs[inst] = fs[inst][:len(fs[inst])//4]
     train = [x for y in train_idx for x in fs[y]]
     valid = [x for y in valid_idx for x in fs[y]]
     test = [x for y in test_idx for x in fs[y]]
