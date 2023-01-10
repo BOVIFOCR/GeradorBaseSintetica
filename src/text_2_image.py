@@ -380,7 +380,7 @@ def mult_img(mask_name, img_name, tipo_doc, area_n_text, param):
     outfpath = str(paths.path_saida / (new_img_name + '.jpg'))
     cv.imwrite(outfpath, final_img)
     write_txt_file(new_img_name, area_n_text, angle=0)
-    logging.info(f'Resultado da síntese salvo em {outfpath}.')
+    logging.info(f'Synthesis output stored at {outfpath}')
     return new_img_name
 
 
@@ -390,7 +390,7 @@ def control_mask_gen(json_arq, img_id):
     inicio = time.time()
     area_n_text = text_mask_generator(
         tipo_doc="RG", json_arq=json_arq, img_fname=img_name, angle=0)
-    logging.debug(f"Tempo de execução para geração da máscara: {str(time.time() - inicio)}.")
+    logging.debug(f"Execution time for mask gen: {str(time.time() - inicio)}")
     mult_img(
         f"mask_{img_name}", img_name,
         tipo_doc="RG", area_n_text=area_n_text, param=150)

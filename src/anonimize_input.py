@@ -47,9 +47,9 @@ def process_main(img_spath):
     labels_fpath = img_spath.labels_fpath()
 
     try:
-        logging.info(f"Processando {img_spath}")
-        img = cv2.imread(str(img_spath))
+        logging.info(f"Processing {img_spath}")
 
+        img = cv2.imread(str(img_spath))
         # Ajusta o DPI e orientação da imagem e salva o resultado em `paths.path_rot`
         img, resize_scale = resize_image(img)
 
@@ -73,7 +73,8 @@ def process_main(img_spath):
 
 def main():
     input_list = list(paths.list_input_images(for_anon=True))
-    logging.info(f"Foram carregadas {len(input_list)} imagens para anonimização.")
+    num_input_items = len(input_list)
+    logging.info(f"Finished loading {num_input_items} images for anonimization")
 
     if os.environ.get("SINGLE_THREAD"):
         logging.info("Iniciando processamento serial.")

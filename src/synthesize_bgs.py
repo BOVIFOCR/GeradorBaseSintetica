@@ -22,13 +22,12 @@ def process_main(input_fpath):
     try:
         for it_idx in range(args.num_iters):
             text_2_image.control_mask_gen(json_arq=json_arq, img_id=img_id)
-    except Exception:
-        logging.error(
-            f"Erro na iteração de síntese {it_idx}",
-            f"da imagem {img_id} a partir de ",
-            f"anotações em {anon_labels_fpath}.",
-        )
-        logging.error(f"Traceback capturado:\n{tcb.format_exc()}")
+    except Exception as e:
+        logging.error(' '.join(
+            f"Caught exception {e} at synthesis iteration index {it_idx}",
+            f"when processing image {img_id} with annotation {anon_labels_fpath}",
+            f"\n{tcb.format_exc()}"
+        ))
         exit(-1)
 
 
