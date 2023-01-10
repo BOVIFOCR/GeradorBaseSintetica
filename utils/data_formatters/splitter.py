@@ -3,7 +3,6 @@ import csv
 import json
 import os
 import sys
-from pathlib import Path
 
 import paths
 
@@ -11,7 +10,10 @@ with open(sys.argv[1]) as fd:
     csr = csv.reader(fd)
     ls = list(csr)
 
-entities = json.loads(Path('files/entities.json').read_text())
+side = sys.argv[2]
+synth_dir = paths.SynthesisDir(sys.argv[2])
+
+entities = json.loads((synth_dir.path_static / f'{side}_entities.json').read_text())
 
 headers = ls[0]
 ls = ls[1:]

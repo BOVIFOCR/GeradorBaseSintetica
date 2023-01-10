@@ -96,13 +96,11 @@ def create_sweep_area(x_inicial, y_inicial, x_final, y_final):
 
 
 # Mask creation
-def get_inpainting_masks(img, rects):
+def get_inpainting_mask(img, rects):
     """Computes coarser and finer inpaint masks"""
     inpaint_mask = np.zeros((img.shape[0], img.shape[1], 1), like=img, dtype=np.uint8)
-    inpaint_mask_coarse = np.zeros((img.shape[0], img.shape[1], 1), like=img, dtype=np.uint8)
     binarization_method = doxa.Binarization.Algorithms.ISAUVOLA
     for rect_x, rect_y, rect_x_final, rect_y_final in rects:
-        inpaint_mask_coarse[rect_y:rect_y_final, rect_x:rect_x_final] = 255
 
         # ROI binarization via doxapy
         roi = cv2.cvtColor(img[rect_y:rect_y_final, rect_x:rect_x_final], cv2.COLOR_RGB2GRAY)
@@ -122,7 +120,7 @@ def get_inpainting_masks(img, rects):
                     (2 * dilatation_size + 1, 2 * dilatation_size + 1), (dilatation_size, dilatation_size)))
 
         inpaint_mask[rect_y:rect_y_final, rect_x:rect_x_final] = np.atleast_3d(roi)
-    return inpaint_mask, inpaint_mask_coarse
+    return inpaint_mask
 
 
 # Color correction
@@ -156,20 +154,16 @@ def correct_color_h(img, coord, correction_window_size):
         img[coord[0]][coord[1]] = mean_pixel
 
 
-def correct_color(img, tp, dom_color, tipo_doc):
+def correct_color(img, tp, dom_color):
     """Cobre os pixels listados dentro da área de texto."""
     if check_pixels(tp):
         window = np.array([img[tp[0] - 3, tp[1]], img[tp[0] - 2, tp[1]], img[tp[0] - 1, tp[1]]])
         mean_pixel = np.mean(window)
 
-        if tipo_doc == 'CPF':
+        if mean_pixel > dom_color:
             img[tp[0]][tp[1]] = mean_pixel
-
         else:
-            if mean_pixel > dom_color:
-                img[tp[0]][tp[1]] = mean_pixel
-            else:
-                img[tp[0]][tp[1]] = dom_color
+            img[tp[0]][tp[1]] = dom_color
 
 
 # Sweep erase
@@ -190,8 +184,7 @@ def erase_text_orthogonally(img, area, num_iters=5, correction_window_size=5):
     return cv2.merge(monos)
 
 
-# Inpaint techniques
-## Orthogonal Sweep
+# Orthogonal Sweep
 def inpaint_sweep(img, rects):
     # TODO: try areas on character segmentation rather than full bbox
     for rect_x, rect_y, rect_x_final, rect_y_final in rects:
@@ -214,7 +207,7 @@ def inpaint_sweep(img, rects):
     return img
 
 
-## Classic / Telea
+# Classic / Telea
 def inpaint_telea(img, inpaint_mask, inpaintRadius=3):
     """Applies Telea's inpainting method (TODO: link OpenCV doc.)
 
@@ -225,7 +218,7 @@ def inpaint_telea(img, inpaint_mask, inpaintRadius=3):
         flags=cv2.INPAINT_TELEA, inpaintRadius=inpaintRadius)
 
 
-## GAN
+# GAN
 def inpaint_gan(img, mask, model, mpv):
     img = torch.unsqueeze(transforms.ToTensor()(img), 0)
     mask = torch.unsqueeze(transforms.ToTensor()(mask), 0)

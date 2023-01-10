@@ -143,7 +143,7 @@ class Person:
         self.cpf.append(r_cpf)
         return r_cpf
 
-    def set_rg(self, tipo_doc):
+    def set_rg(self):
         def formata_rg(n_rg):
             rg_f = ""
             for i in range(len(n_rg)):
@@ -176,8 +176,7 @@ class Person:
                 seq_rg = seq_rg + str(sel_num)
             dig = verf_rg(seq_rg)
             seq_rg = seq_rg + dig
-            if tipo_doc == "RG":
-                seq_rg = formata_rg(seq_rg)
+            seq_rg = formata_rg(seq_rg)
             return seq_rg
 
         r_rg = make_rg()
@@ -406,7 +405,7 @@ class Person:
         sel_num_est = random.randint(0, len(df) - 1)
         est_p = df["UF"][sel_num_est].upper()
 
-        rg_p = self.set_rg(tipo_doc="CNH")
+        rg_p = self.set_rg()
 
         final = rg_p + " " + org_p + " " + est_p
 

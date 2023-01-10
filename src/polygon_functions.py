@@ -46,26 +46,3 @@ def rotate_points(shape_x, shape_y, x_ini, y_ini, x_fin, y_fin, angle):
         y_final_rot = y_fin
 
     return x_inicial_rot, y_inicial_rot, x_final_rot, y_final_rot
-
-
-def rotate_poly(shape_x, shape_y, point_x, point_y, angle):
-    x_inicial = point_x
-    y_inicial = point_y
-
-    if angle == 90:
-        x_inicial_rot = shape_x - 1 - y_inicial
-        y_inicial_rot = x_inicial
-
-    elif angle == 180:
-        x_inicial_rot = shape_x - 1 - x_inicial
-        y_inicial_rot = shape_y - 1 - y_inicial
-
-    elif angle == 270:
-        x_inicial_rot = y_inicial
-        y_inicial_rot = shape_y - 1 - x_inicial
-
-    else:
-        x_inicial_rot = x_inicial
-        y_inicial_rot = y_inicial
-
-    return x_inicial_rot, y_inicial_rot
