@@ -1,0 +1,36 @@
+{
+    "nome": {
+      "mandatory": true
+    },
+    "assinatura": {
+      "mandatory": true,
+      "is_entity": false
+    },
+    "face": {
+      "mandatory": true,
+      "is_entity": false,
+      "extend_corners": [
+        ["bottom", "left"]
+      ]
+    },
+    "datanasc": {
+      "mandatory": true
+    },
+    "naturalidade": {
+    },
+    "filiacao1": {
+    },
+    "filiacao2": {
+    },
+    "orgaoexp": {
+    },
+    "codsec": {
+    },
+    "serial": {
+    },
+    "rh": {},
+    "obs": {},
+    "other": {
+      "is_entity": false
+    }
+  }
