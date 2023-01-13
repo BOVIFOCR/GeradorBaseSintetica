@@ -12,11 +12,13 @@ from pathlib import Path
 import cv2 as cv
 from PIL import Image, ImageDraw, ImageFont
 
-import background_generator
 import class_pessoa
-import paths
+import polygon_functions
 
 from logging_cfg import logging
+
+
+logging.getLogger("PIL.Image").setLevel(logging.CRITICAL+1)
 
 entities = json.loads(Path('files/entities.json').read_text())
 
@@ -31,7 +33,7 @@ height_dict = {
 
 
 # Gera o texto a ser colocado na mask.
-def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
+def text_generator(tipo_texto, pessoa, control_text):
     qtd_chars = control_text
     text = ''
     if tipo_texto in ('nome', 'nomePai', 'nomeMae'):
@@ -41,7 +43,7 @@ def text_generator(tipo_texto, pessoa, tipo_doc, control_text):
     elif tipo_texto == 'cpf':
         text = pessoa.set_cpf()
     elif tipo_texto == 'rg':
-        text = pessoa.set_rg(tipo_doc)
+        text = pessoa.set_rg()
     elif tipo_texto in ['org', 'inst']:
         text = pessoa.set_org()
     elif tipo_texto == 'est':
@@ -113,13 +115,8 @@ def med_text_area(text_width, text_height):
     return int(a)
 
 
-def get_font_args(tipo_doc):
-    return 'white'
-
-
 def localize_text_area(temp_mask_path):
-    """Attempts to shrink annotated ROI by detecting text
-    """
+    """Attempts to shrink annotated ROI by detecting text."""
     x, y, w, h = 0, 0, 0, 0
     temp_mask = cv.imread(temp_mask_path)
     gray = cv.cvtColor(temp_mask, cv.COLOR_BGR2GRAY)
@@ -138,23 +135,27 @@ def localize_text_area(temp_mask_path):
 
 
 # Gera as demais masks.
-def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
+def text_mask_generator(json_arq, img_spath):
+    synth_dir = img_spath.synth_dir
+    img_fname = img_spath.name
     area_n_text = []
-    bg_color = get_font_args(tipo_doc)
+    bg_color = 'white'
+    draw_anchor = None
+    draw_align = 'center'
     p1 = class_pessoa.Person()
 
+    with Image.open(str(synth_dir.path_input / img_fname)) as img:
+        img_width, img_height = img.size
 
-    img = Image.open(str(paths.path_entrada / img_fname))
-    img_width, img_height = img.size
-
-    bimg_width, bimg_height = Image.open(str(paths.path_back / img_fname)).size
+    with Image.open(str(synth_dir.path_anon / img_fname)) as img:
+        bimg_width, bimg_height = img.size
 
     mask = Image.new('RGB', (img_width, img_height), color=bg_color)
     mask_name = 'mask_' + img_fname
-    mask.save(os.path.join(paths.path_mask, mask_name))
+    mask.save(os.path.join(synth_dir.path_mask, mask_name))
     mask.close()
 
-    temp_mask_path = Path(paths.path_mask) / ('temp_mask_' + img_fname)
+    temp_mask_path = Path(synth_dir.path_mask) / ('temp_mask_' + img_fname)
 
     regions = json_arq
 
@@ -162,7 +163,7 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
     if regions is not None:
         qtd_regions = len(regions)
         for aux in range(qtd_regions):
-            mask_open = Image.open(paths.path_mask / mask_name)
+            mask_open = Image.open(synth_dir.path_mask / mask_name)
 
             tag = regions[aux]['region_attributes']['tag']
             if regions[aux]['region_attributes']['info_type'] == 'p' and \
@@ -172,9 +173,9 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
 
                 font_color = (8, 8, 8)
                 if tipo_texto in ('nome', 'serial?', 'date'):
-                    font_type = (paths.path_static / 'fonts' / 'tahoma' / 'tahoma-bold.ttf').as_posix()
+                    font_type = (synth_dir.path_static / 'fonts' / 'tahoma' / 'tahoma-bold.ttf').as_posix()
                 else:
-                    font_type = (paths.path_static / 'fonts' / 'tahoma' / 'tahoma-3.ttf').as_posix()
+                    font_type = (synth_dir.path_static / 'fonts' / 'tahoma' / 'tahoma-3.ttf').as_posix()
 
                 if regions[aux]['region_shape_attributes']['name'] == 'rect':
                     # Região é um retângulo.
@@ -186,13 +187,6 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
                     x_final = x_inicial + width
                     y_final = y_inicial + height
 
-                    x_inicial, y_inicial, x_final, y_final = background_generator.rotate_points(
-                        img_width,
-                        img_height,
-                        x_inicial, y_inicial,
-                        x_final, y_final,
-                        angle=angle)
-
                     width = x_final - x_inicial
                     height = y_final - y_inicial
 
@@ -202,21 +196,9 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
                     # Não é um retângulo.
                     all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
                     all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
-                    qtd_points = len(all_points_x)
-
-                    points_x = []
-                    points_y = []
-
-                    for i in range(qtd_points):
-                        pts_x, pts_y = background_generator.rotate_poly(
-                            img_width, img_height, all_points_x[i], all_points_y[i], angle=angle)
-
-                        points_x.append(pts_x)
-                        points_y.append(pts_y)
-
                     min_x, min_y, max_x, max_y = tuple(map(
                         int,
-                        (min(points_x), min(points_y), max(points_x), max(points_y))))
+                        (min(all_points_x), min(all_points_y), max(all_points_x), max(all_points_y))))
                     width = max_x - min_x
                     height = max_y - min_y
 
@@ -225,14 +207,14 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
 
                 qtd_chars = med_text_area(width, height)
                 font = ImageFont.truetype(font_type, height)
-                text = text_generator(tipo_texto, p1, tipo_doc, control_text=qtd_chars)
+                text = text_generator(tipo_texto, p1, control_text=qtd_chars)
                 ImageDraw.Draw(mask_open).text(
-                    (min_x, min_y), text, font_color, anchor='rs', font=font, align='left')
+                    (min_x, min_y), text, font_color, anchor=draw_anchor, font=font, align=draw_align)
 
                 if tipo_texto != 'x':
                     temp_mask = Image.new('RGB', (img_width, img_height), color=bg_color)
                     ImageDraw.Draw(temp_mask).text(
-                        (min_x, min_y), text, font_color, anchor='rs', font=font, align='left')
+                        (min_x, min_y), text, font_color, anchor=draw_anchor, font=font, align=draw_align)
                     temp_mask.save(temp_mask_path)
                     temp_mask.close()
 
@@ -242,7 +224,7 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
                     area_n_text.append(area)
                     os.remove(temp_mask_path)
 
-                mask_open.save(os.path.join(paths.path_mask, mask_name))
+                mask_open.save(os.path.join(synth_dir.path_mask, mask_name))
                 mask_open.close()
 
             else:  # Texto default do documento
@@ -258,16 +240,7 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
                     x_final = x_inicial + width
                     y_final = y_inicial + height
 
-                    x_inicial, y_inicial, x_final, y_final = background_generator.rotate_points(img_width,
-                                                                                                img_height,
-                                                                                                x_inicial, y_inicial,
-                                                                                                x_final, y_final,
-                                                                                                angle=angle)
-
                     min_x, max_x, min_y, max_y = x_inicial, x_final, y_inicial, y_final
-
-                    width = max_x - min_x
-                    height = max_y - min_y
 
                     if transcription != 'X':
                         area = [min_x, min_y, width, height, transcription, tag]
@@ -276,31 +249,22 @@ def text_mask_generator(tipo_doc, json_arq, img_fname, angle):
                 else:
                     all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
                     all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
-                    qtd_points = len(all_points_x)
 
-                    points_x = []
-                    points_y = []
                     width = -1
                     height = -1
 
-                    for i in range(qtd_points):
-                        pts_x, pts_y = background_generator.rotate_poly(img_width, img_height,
-                                                                        all_points_x[i], all_points_y[i], angle=angle)
-                        points_x.append(pts_x)
-                        points_y.append(pts_y)
-
                     if transcription != 'X':
-                        area = [points_x, points_y, width, height, transcription, tag]
+                        area = [all_points_x, all_points_y, width, height, transcription, tag]
                         area_n_text.append(area)
 
     return area_n_text
 
 
 # Cria o txt baseado nas possíveis rotações que ocorreram com a imagem
-def write_txt_file(txt_name, area_n_text, angle):
+def write_txt_file(txt_name, area_n_text, synth_dir):
     txt_text = ''
-    img = Image.open(str(paths.path_saida / (txt_name + '.jpg')))
-    img_width, img_height = img.size
+    with Image.open(str(synth_dir.path_output / (txt_name + '.jpg'))) as img:
+        img_width, img_height = img.size
     im = Image.new('RGB', (img_width, img_height), (0, 0, 0))
     draw = ImageDraw.Draw(im)
     for element in area_n_text:
@@ -311,21 +275,13 @@ def write_txt_file(txt_name, area_n_text, angle):
             continue
         transcription = entities[tag].get('transcript', element[4])
         if width == -1 and height == -1:
-            final_points_x = []
-            final_points_y = []
             x_points = element[0]
             y_points = element[1]
-            qtd_points = len(x_points)
-            for i in range(qtd_points):
-                pts_x, pts_y = background_generator.rotate_poly(
-                    img_width, img_height, x_points[i], y_points[i], angle=angle)
 
-                final_points_x.append(pts_x)
-                final_points_y.append(pts_y)
-            xy = [(final_points_x[a], final_points_y[a]) for a in range(len(final_points_x))]
+            xy = [(x_points[a], y_points[a]) for a in range(len(x_points))]
 
             txt_text = txt_text + \
-                '{}, {}, {}, {}, {}, {}\n'.format(final_points_x, final_points_y, width, height, transcription, tag)
+                '{}, {}, {}, {}, {}, {}\n'.format(x_points, y_points, width, height, transcription, tag)
 
             draw.polygon(xy, fill=(255, 255, 255))
         else:
@@ -333,8 +289,6 @@ def write_txt_file(txt_name, area_n_text, angle):
             y_inicial = element[1]
             x_final = x_inicial + width
             y_final = y_inicial + height
-            x_inicial, y_inicial, x_final, y_final = background_generator.rotate_points(
-                img_width, img_height, x_inicial, y_inicial, x_final, y_final, angle=angle)
 
             width = x_final - x_inicial
             height = y_final - y_inicial
@@ -342,31 +296,10 @@ def write_txt_file(txt_name, area_n_text, angle):
                 '{}, {}, {}, {}, {}, {}\n'.format(x_inicial, y_inicial, width, height, transcription, tag)
 
             draw.rectangle((x_inicial, y_inicial, x_final, y_final), fill=(255, 255, 255))
-    im.save(str(paths.path_saida / f'{txt_name}_mask_GT.jpg'))
-    with open(paths.path_saida / f'{txt_name}_GT.txt', 'w') as file:
+    im.save(str(synth_dir.path_output / f'{txt_name}_mask_GT.jpg'))
+    with open(synth_dir.path_output / f'{txt_name}_GT.txt', 'w') as file:
         file.write('x, y, width, height, transcription, tag\n')
         file.write(txt_text)
-
-
-# Joga pixels brancos na imagem para que pareça mais real.
-def blur_mask(img_name, path_img, tipo_doc):
-    mask_img = cv.imread(os.path.join(path_img, img_name))
-    blue_mask, green_mask, red_mask = cv.split(mask_img)
-    for j in range(mask_img.shape[0]):
-        for i in range(mask_img.shape[1]):
-            random.seed()
-            ruido = random.randint(0, 100)
-            if ruido > 95:
-                if tipo_doc == 'CPF':
-                    blue_mask[j][i] = 0
-                    green_mask[j][i] = 0
-                    red_mask[j][i] = 0
-                else:
-                    blue_mask[j][i] = 255
-                    green_mask[j][i] = 255
-                    red_mask[j][i] = 255
-    dst = cv.merge((blue_mask, green_mask, red_mask))
-    cv.imwrite(os.path.join(paths.path_mask, img_name), dst)
 
 
 # Cria um nome aleatório para as imagens geradas.
@@ -381,45 +314,33 @@ def create_img_name(img_name):
 
 
 # Faz a multiplicação da mask com a imagem original.
-def mult_img(mask_name, img_name, tipo_doc, area_n_text, param):
+def mult_img(mask_name, img_spath, area_n_text, param):
+    img_name = img_spath.name
+    synth_dir = img_spath.synth_dir
     new_img_name = create_img_name(img_name)
-    back = cv.imread(os.path.join(paths.path_back, img_name))
+    back = cv.imread(os.path.join(synth_dir.path_anon, img_name))
     blue_back, green_back, red_back = cv.split(back)
     y = back.shape[0]
     x = back.shape[1]
-    mask = cv.imread(os.path.join(paths.path_mask, mask_name))
+    mask = cv.imread(os.path.join(synth_dir.path_mask, mask_name))
     blue_mask, green_mask, red_mask = cv.split(mask)
     for j, i in itertools.product(range(y), range(x)):
-        if tipo_doc == 'CPF':
-            if blue_mask[j][i] > param and green_mask[j][i] > param and red_mask[j][i] > param:
-                blue_back[j][i] = blue_mask[j][i]
-                green_back[j][i] = green_mask[j][i]
-                red_back[j][i] = red_mask[j][i]
-        elif blue_mask[j][i] < param and green_mask[j][i] < param and red_mask[j][i] < param:
+        if blue_mask[j][i] < param and green_mask[j][i] < param and red_mask[j][i] < param:
             blue_back[j][i] = blue_mask[j][i]
             green_back[j][i] = green_mask[j][i]
             red_back[j][i] = red_mask[j][i]
     final_img = cv.merge((blue_back, green_back, red_back))
-    outfpath = str(paths.path_saida / (new_img_name + '.jpg'))
+    outfpath = str(synth_dir.path_output / (new_img_name + '.jpg'))
     cv.imwrite(outfpath, final_img)
-    write_txt_file(new_img_name, area_n_text, angle=0)
-    logging.info(f'Resultado da síntese salvo em {outfpath}.')
+    write_txt_file(new_img_name, area_n_text, synth_dir)
+    logging.info(f'Synthesis output stored at {outfpath}')
     return new_img_name
 
 
-# Chama as funções de ruído e de multiplicação para cada imagem.
-def noise_mask(tipo_doc, img_name, area_n_text):
-    mask_name = 'mask_' + img_name
-    blur_mask(mask_name, paths.path_mask, tipo_doc)
-    mult_img(mask_name, img_name, tipo_doc, area_n_text, param=150)
-
-
 # Faz a função de main() desse arquivo.
-def control_mask_gen(tipo_doc, json_arq, img_id, angle):
-    img_name = next(paths.path_entrada.glob(f'{img_id}.*')).name
+def control_mask_gen(img_spath, json_arq):
     inicio = time.time()
-    area_n_text = text_mask_generator(tipo_doc, json_arq, img_name, angle)
-    noise_mask(tipo_doc, img_name, area_n_text)
-    fim = time.time()
-    tempo = fim - inicio
-    logging.debug(f"Tempo de execução para geração da máscara: {str(tempo)}.")
+    area_n_text = text_mask_generator(json_arq, img_spath)
+    logging.debug(f"Execution time for mask gen: {str(time.time() - inicio)}")
+    mult_img(
+        f"mask_{img_spath.name}", img_spath, area_n_text=area_n_text, param=150)

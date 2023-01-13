@@ -1,13 +1,13 @@
 .vscode
 
 __pycache__/
-.venv/
-*-venv/
-venv/
+*.venv*/
+*-venv*/
+*venv*/
 
-synthesis_input
+synthesis_input/*/**
+!synthesis_input/*/entities.json
 synthesis_output
 
-mplock_*/
-log.log
-via.csv
+*.log
+*.bak/

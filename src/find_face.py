@@ -6,8 +6,25 @@ dnn = dlib.cnn_face_detection_model_v1(
 )  # Detector pré-treinado.
 
 
+class FaceDetectionError(Exception):
+    pass
+
+
+class NoFaceDetected(FaceDetectionError):
+    def __init__(self):
+        super().__init__("No face detected in profile picture")
+
+
+class MultipleFacesDetected(FaceDetectionError):
+    def __init__(self):
+        super().__init__("Multiple faces detected in profile picture")
+
 def erase_face(img):
     rects = dnn(img)
+    if len(rects) == 0:
+        raise NoFaceDetected()
+    elif len(rects) > 1:
+        raise MultipleFacesDetected()
     for rect in rects:
         x1 = rect.rect.left()
         y1 = rect.rect.top()

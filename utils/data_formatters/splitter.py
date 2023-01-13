@@ -1,50 +1,46 @@
 import ast
 import csv
 import json
-import os
 import sys
-from pathlib import Path
 
 import paths
 
-with open(sys.argv[1]) as fd:
+import pandas as pd
+
+
+side = sys.argv[1]
+synth_dir = paths.SynthesisDir(side)
+
+entities = json.loads((synth_dir.path_input_base / 'entities.json').read_text())
+
+with open(synth_dir.path_input_base / 'entities.via.csv') as fd:
     csr = csv.reader(fd)
     ls = list(csr)
-
-entities = json.loads(Path('files/entities.json').read_text())
 
 headers = ls[0]
 ls = ls[1:]
 fs = {}
 
 
-def parse_label(tag):
-    if tag in ('dataNascimento', 'dataexp'):
-        return 'date'
-    elif tag == 'naturalidade':
-        return 'city-est'
-    elif tag in ('uf'):
-        return 'state'
-    else:
-        return tag
-
-
+sample_df = pd.read_csv((synth_dir.path_input_base / 'sample.via.csv').as_posix())
 for line in ls:
     filename = line[0]
     if filename not in fs:
         fs[filename] = []
 
     data = {
-        'region_id': int(line[4]),  #
-        'region_shape_attributes': ast.literal_eval(line[5]),
-        'region_attributes': ast.literal_eval(line[6])
+        'region_id': int(line[1]),  #
+        'region_shape_attributes': ast.literal_eval(line[2]),
+        'region_attributes': ast.literal_eval(line[3])
     }
     label = data['region_attributes']['tag']
 
-    if entities[label]['sensitive'] or data['region_attributes']['tag_type'] == 'sensitive':
-        transcription = entities[label].get('transcript', data['region_attributes']['transcription'])
+    if entities[label].get('sensitive', False) or (
+        data['region_attributes']['tag_type'] == 'sensitive'):
+        transcription = entities[label].get(
+            'transcript', data['region_attributes']['transcription'])
         data['region_attributes'] |= {
-            'text_type': parse_label(label),
+            'text_type': label,
             'info_type': 'p'
         }
     else:
@@ -55,7 +51,6 @@ for line in ls:
 
     fs[filename].append(data)
 
-os.makedirs(paths.json_path, exist_ok=True)
-for key in fs.keys():
-    with open(paths.json_path / (key.split('.')[0] + '.json'), 'w') as fd:
+for key in fs:
+    with open(synth_dir.path_json / (key.split('.')[0] + '.json'), 'w') as fd:
         fd.write(json.dumps(fs[key], indent=2))

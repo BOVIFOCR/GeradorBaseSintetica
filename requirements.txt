@@ -1,0 +1,11 @@
+autopep8==1.7.0
+beautifulsoup4==4.11.1
+doxapy==0.9.1
+fonttools==4.37.1
+matplotlib==3.5.3
+numpy==1.23.2
+opencv-python==4.6.0.66
+pandas==1.4.3
+pytesseract==0.3.8
+torch==1.13.0
+torchvision==0.2.2
