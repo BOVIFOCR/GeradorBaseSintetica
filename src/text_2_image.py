@@ -147,7 +147,7 @@ def text_mask_generator(json_arq, img_spath):
     with Image.open(str(synth_dir.path_input / img_fname)) as img:
         img_width, img_height = img.size
 
-    with Image.open(str(synth_dir.path_back / img_fname)) as img:
+    with Image.open(str(synth_dir.path_anon / img_fname)) as img:
         bimg_width, bimg_height = img.size
 
     mask = Image.new('RGB', (img_width, img_height), color=bg_color)
@@ -193,7 +193,6 @@ def text_mask_generator(json_arq, img_spath):
                     min_x, max_x, min_y, max_y = tuple(map(int, (x_inicial, x_final, y_inicial, y_final)))
 
                 else:
-                    print('writing on non-rectangle')
                     # Não é um retângulo.
                     all_points_x = regions[aux]['region_shape_attributes']['all_points_x']
                     all_points_y = regions[aux]['region_shape_attributes']['all_points_y']
@@ -213,9 +212,6 @@ def text_mask_generator(json_arq, img_spath):
                     (min_x, min_y), text, font_color, anchor=draw_anchor, font=font, align=draw_align)
 
                 if tipo_texto != 'x':
-                    print('writing x')
-                    print(all_points_x, all_points_y)
-                    print(min_x, min_y, text)
                     temp_mask = Image.new('RGB', (img_width, img_height), color=bg_color)
                     ImageDraw.Draw(temp_mask).text(
                         (min_x, min_y), text, font_color, anchor=draw_anchor, font=font, align=draw_align)
@@ -322,7 +318,7 @@ def mult_img(mask_name, img_spath, area_n_text, param):
     img_name = img_spath.name
     synth_dir = img_spath.synth_dir
     new_img_name = create_img_name(img_name)
-    back = cv.imread(os.path.join(synth_dir.path_back, img_name))
+    back = cv.imread(os.path.join(synth_dir.path_anon, img_name))
     blue_back, green_back, red_back = cv.split(back)
     y = back.shape[0]
     x = back.shape[1]

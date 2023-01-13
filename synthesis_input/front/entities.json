@@ -9,9 +9,7 @@
     "face": {
       "mandatory": true,
       "is_entity": false,
-      "extend_corners": [
-        ["bottom", "left"]
-      ]
+      "extend_corner": ["bottom", "left"]
     },
     "datanasc": {
       "mandatory": true

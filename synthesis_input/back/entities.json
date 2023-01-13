@@ -8,7 +8,8 @@
     },
     "polegar": {
         "is_entity": false,
-        "mandatory": true
+        "mandatory": true,
+        "extend_corner": ["bottom", "right"]
     },
     "dataexp": {},
     "regcivil": {},

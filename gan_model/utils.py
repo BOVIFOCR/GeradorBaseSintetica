@@ -201,9 +201,9 @@ def poisson_blend(input, output, mask, infer_center=True):
     * returns:
                 Output image tensor of shape (N, 3, H, W) inpainted with poisson image editing method.
     """
-    input = input.cpu()
-    output = output.cpu()
-    mask = mask.cpu()
+    input = input.clone().cpu()
+    output = output.clone().cpu()
+    mask = mask.clone().cpu()
     mask = torch.cat((mask, mask, mask), dim=1)  # convert to 3-channel format
     num_samples = input.shape[0]
     ret = []
@@ -211,20 +211,19 @@ def poisson_blend(input, output, mask, infer_center=True):
         # applies `torch -> numpy` conversion to arguments
         dstimg = transforms.functional.to_pil_image(input[i])
         dstimg = np.array(dstimg)[:, :, [2, 1, 0]]
-        imgshapecv = dstimg.shape[:2][::-1]
 
         srcimg = transforms.functional.to_pil_image(output[i])
-        srcimg = cv2.resize(np.array(srcimg), imgshapecv)[:, :, [2, 1, 0]]
+        srcimg = np.array(srcimg)[:, :, [2, 1, 0]]
 
         msk = transforms.functional.to_pil_image(mask[i])
-        msk = cv2.resize(np.array(msk), imgshapecv)[:, :, [2, 1, 0]]
+        msk = np.array(msk)[:, :, [2, 1, 0]]
 
         # compute mask's center
         if infer_center:
             xs, ys = [], []
             for j in range(msk.shape[0]):
                 for k in range(msk.shape[1]):
-                    if msk[j, k, 0] == 255:
+                    if msk[j, k, 0] > 0:
                         ys.append(j)
                         xs.append(k)
             xmin, xmax = min(xs), max(xs)
