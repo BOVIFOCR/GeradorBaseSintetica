@@ -26,13 +26,14 @@ from gan_model.models import CompletionNetwork
 
 from defs.geometry import Polygon2D, Rectifier
 
-device = "gpu:0"
-
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--sample-label", default="front", type=str,
     choices=list(map(str, paths.SampleLabel.__members__.values()))
 )
+parser.add_argument(
+    "--device", default="cpu", type=str, choices=["cpu", "gpu"])
+
 parser.add_argument("--max-num-samples", type=int, default=None)
 parser.add_argument("--max-width", default=1920)
 parser.add_argument("--num-max-procs", default=32)
@@ -42,6 +43,13 @@ args = parser.parse_args()
 
 
 synth_dir = paths.SynthesisDir(args.sample_label)
+
+device_idx = args.device
+if device_idx == None:
+    device = torch.device("cpu")
+else:
+    device = torch.device(f"cuda:{device_idx}")
+
 sample_df = pd.read_csv(
     synth_dir.path_input_base / 'sample.via.csv',
     usecols=('filename', 'doc_polygon'))
