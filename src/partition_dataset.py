@@ -1,3 +1,8 @@
+#    USAGE:
+# python partition_dataset.py <mode> <fdir>
+# mode is cross (all generated from the same instance contained in only one of the three partitions) or std (completely random)
+# fdir is the target directory.
+
 from glob import glob
 import re
 import random
@@ -77,6 +82,9 @@ def gen_new_file(name):
     new_file.close()
     file.close()
 
+if len(sys.argv) != 2:
+    print("Usage: python partition_dataset.py <mode> <fdir>")
+    exit(-1)
 
 if sys.argv[1] not in ['cross', 'std']:
     print("Mode must be cross or std.")
