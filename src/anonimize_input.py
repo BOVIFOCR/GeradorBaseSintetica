@@ -26,6 +26,7 @@ from gan_model.models import CompletionNetwork
 
 from defs.geometry import Polygon2D, Rectifier
 
+device = "gpu:0"
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -90,11 +91,11 @@ def load_annotations(labels_fpath, rescale=None, rectifier=None):
 
 def load_gan_model():
     gan = CompletionNetwork()
-    gan.load_state_dict(torch.load("./src/gan_model/model_cn", map_location="cpu"))
+    gan.load_state_dict(torch.load("./src/gan_model/model_cn", map_location=device))
 
     with open("./src/gan_model/config.json", "r") as f:
         config = json.load(f)
-    mpv = torch.tensor(config["mpv"]).view(3, 1, 1).cpu()
+    mpv = torch.tensor(config["mpv"]).view(3, 1, 1).to(device)
 
     return gan, mpv
 
@@ -193,7 +194,7 @@ def process_single(img_spath, gan, mpv):
                     inpaint_mask = cv2.dilate(inpaint_mask, dilation_structure)
 
             inpainted = inpainting.inpaint_gan(
-                inpainted, inpaint_mask, gan, mpv)
+                inpainted, inpaint_mask, gan, mpv, device)
             inpainted = inpainting.blur_roi(
                 inpainted, entity_poly, ksize=(5, 5))
 

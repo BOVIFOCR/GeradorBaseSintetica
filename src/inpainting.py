@@ -22,9 +22,9 @@ def inpaint_telea(img, inpaint_mask, inpaint_radius=3):
         flags=cv2.INPAINT_TELEA, inpaintRadius=inpaint_radius)
 
 
-def inpaint_gan(img, mask, model, mpv):
-    img = torch.unsqueeze(transforms.ToTensor()(img), 0).cpu()
-    mask = torch.unsqueeze(transforms.ToTensor()(mask), 0).cpu()
+def inpaint_gan(img, mask, model, mpv, device):
+    img = torch.unsqueeze(transforms.ToTensor()(img), 0).to(device)
+    mask = torch.unsqueeze(transforms.ToTensor()(mask), 0).to(device)
     mask.clamp_(0, 1)
     img.sub_(img * mask)
     img.add_(mpv * mask)
