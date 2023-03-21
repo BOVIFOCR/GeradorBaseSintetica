@@ -223,12 +223,14 @@ class Person:
 
     def set_pis(self, qtd_chars):
         pis_pasep = ""
-        for x in range(9):
+        for x in range(11):
             random.seed()
             sel_num = random.randint(0, 9)
             pis_pasep = pis_pasep + str(sel_num)
-            if x == 4:
-                pis_pasep = pis_pasep + "/"
+            if x == 3 or x == 8:
+                pis_pasep = pis_pasep + "."
+            elif x == 9:
+                pis_pasep = pis_pasep + "-"
         if len(pis_pasep) > qtd_chars:
             pis_pasep = pis_pasep[:qtd_chars]
         self.pis.append(pis_pasep)
